@@ -65,7 +65,12 @@ fn request_with(request: &Request, system_proxy: bool) -> Result<Response, Strin
     let status = answer.status().as_u16();
     let mut body = String::new();
     // a body cut off or not text is no answer: say so, not "empty"
-    answer.body_mut().as_reader().take(MAX_ANSWER).read_to_string(&mut body).map_err(|_| "The service's answer couldn't be read. Try again later.".to_string())?;
+    answer
+        .body_mut()
+        .as_reader()
+        .take(MAX_ANSWER)
+        .read_to_string(&mut body)
+        .map_err(|_| "The service's answer couldn't be read. Try again later.".to_string())?;
     Ok(Response { status, body })
 }
 
