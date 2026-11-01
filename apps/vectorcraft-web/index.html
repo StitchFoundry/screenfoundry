@@ -12,7 +12,7 @@
        inline script Trunk writes (`cargo xtask web-csp`, a Trunk post_build hook); `cargo xtask web-csp --check`
        and the xtask tests fail when a script isn't allowed, which would leave the page blank. connect-src names
        the only other sites the app talks to: MakerFoundry (Publish; Open in ScreenFoundry) and Foundry Account. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' __SCRIPT_HASHES__ 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' data: blob: https://makerfoundry.app https://www.makerfoundry.app https://cloud.stitchfoundry.app; font-src 'self' data:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' __SCRIPT_HASHES__ 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' data: blob: https://makerfoundry.app https://www.makerfoundry.app https://cloud.stitchfoundry.app; font-src 'self' data:; worker-src 'self' blob:; frame-src blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>ScreenFoundry</title>
   <link data-trunk rel="rust" data-bin="vectorcraft-web" data-wasm-opt="z" data-weak-refs />
   <style>

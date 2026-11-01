@@ -224,3 +224,47 @@ fn a_host_that_cannot_send_is_told_so_and_the_menu_items_are_disabled() {
     let e = crate::dialogs::confirm(&mut app).unwrap_err();
     assert!(e.contains("can't be reached"), "{e}");
 }
+
+/// A control-channel or MCP call (`ui.dialog.set`, `ui.dialog.confirm`) can open the Publish and
+/// Foundry Account dialogs but not fill them in or press their button: nothing is sent.
+#[test]
+fn a_script_or_assistant_cannot_press_send_or_type_the_password() {
+    use crate::control::{ControlRequest, Outcome};
+    let (mut app, seen, _) = app(vec![signed_in(), draft()]);
+    let ctx = egui::Context::default();
+    let mut call = |app: &mut VectorcraftApp, method: &str, params: Value| {
+        let (req, _rx) = ControlRequest::new(method, params);
+        let Outcome::Done(r) = crate::control::handle(app, &ctx, &req) else { panic!("not done") };
+        r
+    };
+    app.run("ui.foundryAccount", json!({})).unwrap();
+    let r = call(&mut app, "ui.dialog.set", json!({"fields": [{"field": "email", "value": "x@example.com"}, {"field": "password", "value": "pw"}]}));
+    assert_eq!(r["ok"], false, "{r}");
+    assert!(app.ui.dialog.as_ref().unwrap().str("password").is_empty());
+    let r = call(&mut app, "ui.dialog.confirm", json!({}));
+    assert_eq!(r["ok"], false, "{r}");
+    assert!(seen.borrow().is_empty() && kind(&app) == Some(ACCOUNT_KIND));
+    // signed in by the person, the Publish dialog is just as closed to a script
+    type_credentials(&mut app);
+    press_ok(&mut app).unwrap();
+    app.run("ui.publishToMakerFoundry", json!({})).unwrap();
+    assert_eq!(kind(&app), Some(PUBLISH_KIND));
+    let before = seen.borrow().len();
+    let r = call(&mut app, "ui.dialog.confirm", json!({}));
+    assert_eq!(r["ok"], false, "{r}");
+    assert_eq!(seen.borrow().len(), before, "nothing was sent");
+    assert_eq!(kind(&app), Some(PUBLISH_KIND));
+}
+
+/// A late answer closes only its own dialog, not one the person opened since.
+#[test]
+fn a_late_answer_leaves_another_dialog_open() {
+    let (mut app, _, _) = app(vec![signed_in()]);
+    app.run("ui.foundryAccount", json!({})).unwrap();
+    type_credentials(&mut app);
+    // the request goes out, the answer waits in the mailbox, and the person opens another dialog
+    crate::dialogs::confirm(&mut app).unwrap();
+    app.ui.dialog = Some(Dialog::new("about", json!({})));
+    drain(&mut app);
+    assert_eq!(kind(&app), Some("about"));
+}

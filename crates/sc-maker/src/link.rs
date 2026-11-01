@@ -97,7 +97,15 @@ pub fn file_name(checked: &Checked, disposition: Option<&str>) -> String {
 pub fn clean_name(name: &str) -> String {
     let last = name.rsplit(['/', '\\']).next().unwrap_or_default();
     let kept: String = last.chars().filter(|c| !text::hidden(*c)).collect();
-    kept.trim().trim_start_matches('.').chars().take(MAX_NAME).collect::<String>().trim().to_string()
+    let kept = kept.trim().trim_start_matches('.');
+    // a long name loses the end of its stem, never its extension (".svg" is what lets it open)
+    match kept.rsplit_once('.') {
+        Some((stem, ext)) if !stem.is_empty() && ext.chars().count() <= 16 => {
+            let room = MAX_NAME - ext.chars().count() - 1;
+            format!("{}.{ext}", stem.chars().take(room).collect::<String>().trim_end())
+        }
+        _ => kept.chars().take(MAX_NAME).collect::<String>().trim().to_string(),
+    }
 }
 
 /// Whether the file is an SVG by its name: ScreenFoundry opens only SVG designs from MakerFoundry.
@@ -182,6 +190,14 @@ mod tests {
     use super::*;
 
     const GOOD: &str = "https://makerfoundry.app/api/v1/designs/42/file/rose.svg";
+
+    #[test]
+    fn a_long_name_keeps_its_svg_extension() {
+        let long = format!("{}.svg", "a".repeat(300));
+        let got = clean_name(&long);
+        assert!(got.ends_with(".svg") && got.chars().count() <= MAX_NAME, "{got}");
+        assert!(require_svg(&got).is_ok());
+    }
 
     #[test]
     fn a_makerfoundry_design_file_is_accepted_and_rebuilt() {
