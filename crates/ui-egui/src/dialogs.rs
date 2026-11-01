@@ -57,6 +57,7 @@ pub mod life_size;
 pub mod liquify;
 pub mod live_paint_gaps;
 pub mod live_paint_selection;
+mod maker;
 pub mod missing_fonts;
 pub mod missing_links;
 pub(crate) mod modal;
@@ -328,6 +329,8 @@ registry! {
     ImportPdf: [import_pdf::KIND] => import_pdf::SPEC,
     SwatchConflict: [swatch_conflict::KIND] => swatch_conflict::SPEC,
     FileInfo: [file_info::KIND] => file_info::SPEC,
+    FoundryAccount: [crate::maker::ACCOUNT_KIND] => maker::ACCOUNT,
+    MakerFoundryPublish: [crate::maker::PUBLISH_KIND] => maker::PUBLISH,
     RasterEffectsSettings: [raster_effects::KIND] => raster_effects::SPEC,
     EffectGallery: [effect_gallery::KIND] => effect_gallery::SPEC,
     MissingLinks: [missing_links::KIND] => missing_links::SPEC,
