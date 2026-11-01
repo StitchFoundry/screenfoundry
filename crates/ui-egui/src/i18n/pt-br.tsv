@@ -4161,7 +4161,7 @@ axis	Both	Ambos
 	Brother PEC (.pec)…	Brother PEC (.pec)…
 
 # Embroidery (ScreenFoundry), phase 1
-	Version {version} — open-source machine embroidery digitizing in pure Rust.	Versão {version} — digitalização de bordado à máquina de código aberto em Rust puro.
+	Version {version} — open-source screen-printing prepress in pure Rust.	Versão {version} — pré-impressão para serigrafia de código aberto em Rust puro.
 	Machine embroidery digitizing — fast, open, scriptable.	Digitalização de bordado à máquina — rápida, aberta, scriptável.
 	Clear Machine Function	Remover função da máquina
 	Insert Machine Function	Inserir função da máquina

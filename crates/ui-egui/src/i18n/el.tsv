@@ -5498,7 +5498,7 @@ effect	Points	Σημεία
 	Stitch Lines	Γραμμές βελονιών
 	Tatami	Τατάμι
 	By SiteSentrix, based on VectorCraft by the ArtCraft team. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	Από τη SiteSentrix, με βάση το VectorCraft της ομάδας ArtCraft. MIT OR Apache-2.0. Γραμματοσειρές: Source Sans 3, Inter, JetBrains Mono (OFL). Εικονίδια: Lucide (ISC) + VectorCraft.
-	Version {version} — open-source machine embroidery digitizing in pure Rust.	Έκδοση {version} — ψηφιοποίηση μηχανικού κεντήματος ανοιχτού κώδικα, γραμμένη αποκλειστικά σε Rust.
+	Version {version} — open-source screen-printing prepress in pure Rust.	Έκδοση {version} — προεκτύπωση για μεταξοτυπία ανοιχτού κώδικα σε καθαρή Rust.
 	Machine embroidery digitizing — fast, open, scriptable.	Ψηφιοποίηση μηχανικού κεντήματος — γρήγορη, ανοιχτή, προγραμματιζόμενη.
 	Split Here	Διαχωρισμός εδώ
 	Split the object in two at the picked stitch	Διαχωρισμός του αντικειμένου στα δύο στην επιλεγμένη βελονιά
