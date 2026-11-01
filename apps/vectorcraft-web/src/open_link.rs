@@ -14,7 +14,11 @@ use crate::fetch::{self, Options};
 pub fn start(checked: Checked, inbox: vectorcraft_ui_egui::Inbox, note: std::rc::Rc<std::cell::RefCell<Option<String>>>, ctx: egui::Context) {
     wasm_bindgen_futures::spawn_local(async move {
         match get(&checked).await {
-            Ok(file) => inbox.lock().unwrap_or_else(|e| e.into_inner()).push(file),
+            Ok(file) => {
+                // the status bar said "Opening…" when the fetch started: say what opened
+                *note.borrow_mut() = Some(format!("Opened {}", file.0));
+                inbox.lock().unwrap_or_else(|e| e.into_inner()).push(file);
+            }
             Err(e) => {
                 log::error!("vectorcraft-web: open {}: {e}", checked.as_str());
                 *note.borrow_mut() = Some(format!("Couldn't open the design from MakerFoundry: {e}"));
