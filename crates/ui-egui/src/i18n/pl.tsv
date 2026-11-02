@@ -5396,7 +5396,7 @@ mark-style	Japanese	Japońskie
 	Stitch Lines	Linie ściegów
 	Tatami	Tatami
 	By SiteSentrix, based on VectorCraft by the ArtCraft team. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	SiteSentrix, na podstawie VectorCraft zespołu ArtCraft. MIT OR Apache-2.0. Czcionki: Source Sans 3, Inter, JetBrains Mono (OFL). Ikony: Lucide (ISC) + VectorCraft.
-	Version {version} — open-source machine embroidery digitizing in pure Rust.	Wersja {version} — otwartoźródłowa digitalizacja haftu maszynowego w czystym Ruście.
+	Version {version} — open-source screen-printing prepress in pure Rust.	Wersja {version} — otwartoźródłowe przygotowanie do druku sitowego w czystym Ruście.
 	Machine embroidery digitizing — fast, open, scriptable.	Digitalizacja haftu maszynowego — szybka, otwarta, skryptowalna.
 	Split Here	Podziel tutaj
 	Split the object in two at the picked stitch	Podziel obiekt na dwa w wybranym ściegu

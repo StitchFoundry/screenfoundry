@@ -5533,7 +5533,7 @@ imageTrace	Outline	Körvonal
 	Stitch Lines	Öltésvonalak
 	Tatami	Tatami
 	By SiteSentrix, based on VectorCraft by the ArtCraft team. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	Készítette: SiteSentrix, a VectorCraft alapján, amelyet az ArtCraft csapata készít. MIT OR Apache-2.0. Betűtípusok: Source Sans 3, Inter, JetBrains Mono (OFL). Ikonok: Lucide (ISC) + VectorCraft.
-	Version {version} — open-source machine embroidery digitizing in pure Rust.	Verzió: {version} – nyílt forráskódú gépi hímzés-digitalizálás tiszta Rust nyelven.
+	Version {version} — open-source screen-printing prepress in pure Rust.	Verzió: {version} – nyílt forráskódú szitanyomás-előkészítés tiszta Rust nyelven.
 	Machine embroidery digitizing — fast, open, scriptable.	Gépi hímzés digitalizálása – gyorsan, nyíltan, szkriptelhetően.
 	Split Here	Felosztás itt
 	Split the object in two at the picked stitch	Az objektum kettéosztása a kiválasztott öltésnél

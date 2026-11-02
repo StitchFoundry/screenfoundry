@@ -45,6 +45,7 @@ pub mod library;
 pub mod linkfiles;
 pub mod links;
 mod live;
+pub mod makerfoundry;
 pub(crate) mod maskedit;
 pub(crate) mod menucmds;
 pub(crate) mod newart;
@@ -265,6 +266,7 @@ pub fn command_specs() -> &'static [CommandSpec] {
         v.extend(fonts::specs());
         v.extend(fontfiles::specs());
         v.extend(help::specs());
+        v.extend(makerfoundry::specs());
         v.extend(threads::specs());
         v.extend(textwrap::specs());
         v.extend(graph::specs());

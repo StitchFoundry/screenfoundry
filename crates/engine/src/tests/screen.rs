@@ -1035,6 +1035,20 @@ fn dtf_can_be_tiff_graded_and_laid_out_on_a_gang_sheet() {
 }
 
 #[test]
+fn a_gang_sheet_over_the_size_cap_is_refused_before_any_artboard_is_rendered() {
+    // Issue #23: two 1400 pt artboards at 400 dpi are about 60 MP each, 121 MP together, over the
+    // 100 MP cap. The request must fail up front, naming the artboards, not after rendering both.
+    let mut s = Session::new();
+    s.execute("file.new", &json!({"width": 1400, "height": 1400})).unwrap();
+    s.execute("artboard.new", &json!({"x": 1500, "y": 0, "width": 1400, "height": 1400})).unwrap();
+    let e = s.execute("screen.dtf", &json!({"artboards": "all", "sheetWidthMm": 2000, "dpi": 400})).unwrap_err().to_string();
+    assert!(e.contains("the artboards together would be") && e.contains("megapixels"), "{e}");
+    // One artboard alone over the cap (136 MP at 600 dpi) is refused before rendering too.
+    let e = s.execute("screen.palette", &json!({"dpi": 600})).unwrap_err().to_string();
+    assert!(e.contains("artboard 1 would be") && e.contains("megapixels"), "{e}");
+}
+
+#[test]
 fn gang_sheets_can_turn_designs_and_dcs_has_a_chosen_composite_and_managed_cmyk() {
     let mut s = Session::new();
     let decode = |f: &Value| vectorcraft_format::base64_decode(f["dataBase64"].as_str().unwrap()).unwrap();

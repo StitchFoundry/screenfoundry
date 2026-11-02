@@ -326,6 +326,9 @@ pub fn handle(app: &mut VectorcraftApp, ctx: &egui::Context, req: &ControlReques
                     let names = crate::dialogs::field_names(d).join(", ");
                     return err(format!("the `{}` dialog has no field `{f}`; its fields: {names}", d.kind));
                 }
+                if crate::maker::person_only(&d.kind) {
+                    return err(format!("the `{}` dialog is filled in by the person, not by a script or an assistant", d.kind));
+                }
                 for (f, value) in fields {
                     crate::dialogs::set_field(d, f, value);
                 }
@@ -333,7 +336,13 @@ pub fn handle(app: &mut VectorcraftApp, ctx: &egui::Context, req: &ControlReques
             }
             None => err("no dialog open"),
         },
-        "ui.dialog.confirm" => wrap(crate::dialogs::confirm(app)),
+        "ui.dialog.confirm" => match app.ui.dialog.as_ref() {
+            // Sending to MakerFoundry or signing in is the person's to press, never a script's or an assistant's.
+            Some(d) if crate::maker::person_only(&d.kind) => {
+                err(format!("the `{}` dialog must be confirmed by the person: press its button", d.kind))
+            }
+            _ => wrap(crate::dialogs::confirm(app)),
+        },
         "ui.dialog.cancel" => {
             crate::dialogs::cancel(app);
             ok(Value::Null)

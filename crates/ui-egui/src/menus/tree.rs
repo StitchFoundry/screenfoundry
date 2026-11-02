@@ -75,6 +75,9 @@ pub fn menu_tree_named(english_names: bool) -> Vec<(&'static str, Vec<Item>)> {
                 ),
                 c("File Info…", "file.info"),
                 Sep,
+                c("Publish to MakerFoundry…", "ui.publishToMakerFoundry"),
+                c("Foundry Account…", "ui.foundryAccount"),
+                Sep,
                 c("Print…", "file.print"),
                 Sep,
                 c("Exit", "app.quit"),
@@ -687,6 +690,8 @@ pub fn menu_tree_named(english_names: bool) -> Vec<(&'static str, Vec<Item>)> {
             "Help",
             vec![
                 c("ScreenFoundry on GitHub", "help.github"),
+                c("Buy Me a Coffee", "help.support"),
+                c("MakerFoundry on YouTube", "help.youtube"),
                 Sep,
                 c("Search Commands…", "help.commandPalette"),
                 todos("VectorCraft Help…", "F1"),

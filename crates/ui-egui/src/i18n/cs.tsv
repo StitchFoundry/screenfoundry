@@ -5049,7 +5049,7 @@ machine	Stop	Zastavení
 	Stitch Lines	Čáry stehů
 	Tatami	Tatami
 	By SiteSentrix, based on VectorCraft by the ArtCraft team. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	Od SiteSentrix, na základě aplikace VectorCraft od týmu ArtCraft. MIT OR Apache-2.0. Písma: Source Sans 3, Inter, JetBrains Mono (OFL). Ikony: Lucide (ISC) + VectorCraft.
-	Version {version} — open-source machine embroidery digitizing in pure Rust.	Verze {version} — open-source digitalizace strojových výšivek v čistém Rustu.
+	Version {version} — open-source screen-printing prepress in pure Rust.	Verze {version} — open-source předtisková příprava pro sítotisk v čistém Rustu.
 	Machine embroidery digitizing — fast, open, scriptable.	Digitalizace strojových výšivek — rychlá, otevřená, skriptovatelná.
 	Split Here	Rozdělit zde
 	Split the object in two at the picked stitch	Rozdělit objekt na dva u vybraného stehu

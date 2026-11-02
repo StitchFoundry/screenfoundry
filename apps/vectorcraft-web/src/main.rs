@@ -23,12 +23,16 @@
 #[cfg(target_arch = "wasm32")]
 mod api;
 #[cfg(target_arch = "wasm32")]
+mod fetch;
+#[cfg(target_arch = "wasm32")]
 mod fonts;
 #[cfg(any(target_arch = "wasm32", test))]
 mod keys;
 #[cfg(target_arch = "wasm32")]
 mod locks;
-#[cfg(any(target_arch = "wasm32", test))]
+#[cfg(target_arch = "wasm32")]
+mod maker_http;
+#[cfg(target_arch = "wasm32")]
 mod open_link;
 #[cfg(any(target_arch = "wasm32", test))]
 mod pencil;
