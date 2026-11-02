@@ -111,4 +111,12 @@ mod tests {
         let empty = stream("", &[]);
         assert!(String::from_utf8_lossy(&empty).contains("/Length 0"));
     }
+
+    #[test]
+    fn an_empty_document_still_has_a_valid_trailer() {
+        let bytes = Pdf::new().finish(1).unwrap();
+        let text = String::from_utf8_lossy(&bytes);
+        assert!(text.starts_with("%PDF-1.4"));
+        assert!(text.contains("0 1\n0000000000 65535 f"));
+    }
 }

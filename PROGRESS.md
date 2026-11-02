@@ -7,3 +7,4 @@
 - 2026-11-01 nightly maintenance: queue empty; full `cargo xtask ci` failed once at `test` on a flaky render test (`a_ready_bitmap_draws_again_where_its_file_shows`, passes alone and 4x in the crate); later CI steps not reached. Added `pdfout.rs` tests (xref offsets, stream length, unreserved ids). Tests only.
 - 2026-11-01 nightly sweep: no needs-triage issues; history secret scan clean; cargo audit unchanged (#19). Filed #23 and fixed it here: `screen.dtf` gang sheets and `artboard_art` now refuse over-cap sizes before rendering.
 - Main: `cargo xtask ci` all green except wasm (target missing here; passes once installed): 11,037 tests pass.
+- 2026-11-02 nightly maintenance: queue empty; `cargo xtask ci` showed no failures (cut off by my 50-min timeout during the slow fuzz tests); sc-core tests stable over 3 runs. Added `pdfout.rs` tests (xref offsets, trailer, bad ids, stream length). Tests only.
