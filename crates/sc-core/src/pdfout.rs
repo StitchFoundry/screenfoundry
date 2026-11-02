@@ -68,4 +68,47 @@ mod tests {
         p.reserve();
         assert!(p.finish(root).is_err());
     }
+
+    #[test]
+    fn xref_offsets_point_at_their_objects() {
+        let mut p = Pdf::new();
+        let later = p.reserve();
+        let root = p.add(b"<< /Type /Catalog >>");
+        p.set(later, b"<< /Type /Pages >>");
+        let bytes = p.finish(root).unwrap();
+        let text = String::from_utf8_lossy(&bytes).into_owned();
+        assert!(text.starts_with("%PDF-1.4\n") && text.ends_with("%%EOF\n"));
+        assert!(text.contains("/Size 3 /Root 2 0 R"));
+        let xref_at = bytes.windows(9).position(|w| w == b"xref\n0 3\n").unwrap();
+        let tail = String::from_utf8_lossy(&bytes[xref_at..]).into_owned();
+        let rows: Vec<&str> = tail.lines().skip(2).take(3).collect();
+        assert_eq!(rows[0], "0000000000 65535 f ");
+        for (i, row) in rows.iter().skip(1).enumerate() {
+            let off: usize = row[..10].parse().unwrap();
+            assert!(bytes[off..].starts_with(format!("{} 0 obj\n", i + 1).as_bytes()), "object {}", i + 1);
+        }
+        let start: usize = tail.split("startxref\n").nth(1).unwrap().lines().next().unwrap().parse().unwrap();
+        assert_eq!(start, xref_at);
+    }
+
+    #[test]
+    fn setting_an_unreserved_id_is_ignored() {
+        let mut p = Pdf::new();
+        let root = p.add(b"<< >>");
+        let before = p.out.clone();
+        p.set(0, b"x");
+        p.set(99, b"x");
+        assert_eq!(p.out, before);
+        assert!(p.finish(root).is_ok());
+    }
+
+    #[test]
+    fn a_stream_states_its_exact_length() {
+        let s = stream("/Filter /None", &[0, 1, 2, 255]);
+        let text = String::from_utf8_lossy(&s).into_owned();
+        assert!(text.starts_with("<< /Filter /None /Length 4 >>\nstream\n"));
+        assert!(s.ends_with(b"\nendstream"));
+        let empty = stream("", &[]);
+        assert!(String::from_utf8_lossy(&empty).contains("/Length 0"));
+    }
 }

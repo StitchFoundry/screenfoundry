@@ -4,5 +4,6 @@
 - Left out on purpose (API rewrites), now held by ignore rules in `.github/dependabot.yml`: zbus 6 (blocking API removed), harfrust 0.15, vello_cpu/vello_common 0.3; egui and winit stay on the storytold forks.
 - 2026-10-31 nightly maintenance: queue empty; added unit tests for `sc-core` pixel containers (`image.rs`: size caps, overflow, bad buffers, bounds, mirror). Tests only.
 - Full `cargo xtask ci` hit "no space left on device" late in the run (after all test suites passed); disk-full, not a code failure.
+- 2026-11-01 nightly maintenance: queue empty; full `cargo xtask ci` failed once at `test` on a flaky render test (`a_ready_bitmap_draws_again_where_its_file_shows`, passes alone and 4x in the crate); later CI steps not reached. Added `pdfout.rs` tests (xref offsets, stream length, unreserved ids). Tests only.
 - 2026-11-01 nightly sweep: no needs-triage issues; history secret scan clean; cargo audit unchanged (#19). Filed #23 and fixed it here: `screen.dtf` gang sheets and `artboard_art` now refuse over-cap sizes before rendering.
 - Main: `cargo xtask ci` all green except wasm (target missing here; passes once installed): 11,037 tests pass.
