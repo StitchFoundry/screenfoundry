@@ -7,6 +7,12 @@ use crate::VectorcraftApp;
 #[cfg(not(target_arch = "wasm32"))]
 use craft_update::updater::{Action, Status, Updater};
 
+/// ScreenFoundry as its releases know it: updates are looked for in ScreenFoundry's own repository and
+/// nowhere else. (The suite's VectorCraft entry would look in VectorCraft's, whose newer version
+/// numbers would offer VectorCraft's installers in place of ScreenFoundry.)
+#[cfg(not(target_arch = "wasm32"))]
+pub const APP: craft_update::App = craft_update::App::new("screenfoundry", "ScreenFoundry", "Screen-printing prepress", "Stitchwright/screenfoundry");
+
 pub(crate) struct Runtime {
     #[cfg(not(target_arch = "wasm32"))]
     updater: Updater,
@@ -26,7 +32,7 @@ impl Default for Runtime {
     fn default() -> Self {
         Self {
             #[cfg(not(target_arch = "wasm32"))]
-            updater: Updater::new(&craft_update::suite::VECTORCRAFT, env!("CARGO_PKG_VERSION")),
+            updater: Updater::new(&APP, env!("CARGO_PKG_VERSION")),
             #[cfg(not(target_arch = "wasm32"))]
             startup_check: false,
             #[cfg(not(target_arch = "wasm32"))]
@@ -135,6 +141,15 @@ pub(crate) fn show(app: &mut VectorcraftApp, ctx: &egui::Context) {
 mod tests {
     use super::*;
     use vectorcraft_engine::Session;
+
+    /// Updates come from ScreenFoundry's own releases, never VectorCraft's.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn updates_are_looked_for_in_screenfoundrys_own_repository() {
+        assert_eq!(APP.repo, "Stitchwright/screenfoundry");
+        assert_eq!(APP.releases_url(), "https://github.com/Stitchwright/screenfoundry/releases");
+        assert!(!APP.repo.contains("vectorcraft") && APP.stems().all(|s| s == "screenfoundry"));
+    }
 
     #[test]
     fn default_runtime_is_idle() {

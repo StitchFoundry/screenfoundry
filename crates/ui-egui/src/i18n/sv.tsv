@@ -5500,7 +5500,7 @@ theme	Appearance	Utseende
 	Stitch Lines	Stygnlinjer
 	Tatami	Tatami
 	By SiteSentrix, based on VectorCraft by the ArtCraft team. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	Av SiteSentrix, baserat på VectorCraft av ArtCraft-teamet. MIT OR Apache-2.0. Typsnitt: Source Sans 3, Inter, JetBrains Mono (OFL). Ikoner: Lucide (ISC) + VectorCraft.
-	Version {version} — open-source machine embroidery digitizing in pure Rust.	Version {version} — digitalisering av maskinbroderi med öppen källkod, i ren Rust.
+	Version {version} — open-source screen-printing prepress in pure Rust.	Version {version} — förtryck för screentryck med öppen källkod, i ren Rust.
 	Machine embroidery digitizing — fast, open, scriptable.	Digitalisering av maskinbroderi — snabb, öppen, skriptbar.
 	Split Here	Dela här
 	Split the object in two at the picked stitch	Dela objektet i två vid det valda stygnet

@@ -108,6 +108,12 @@ pub fn publish(app: &mut VectorcraftApp, p: &Value) -> Result<Value, String> {
     Ok(Value::Null)
 }
 
+/// The dialogs only the person confirms or fills in: `ui.dialog.set` and `ui.dialog.confirm` (the
+/// control channel and MCP) refuse them, so a script or an assistant can open them but not press Send.
+pub(crate) fn person_only(kind: &str) -> bool {
+    kind == ACCOUNT_KIND || kind == PUBLISH_KIND
+}
+
 /// `ui.foundryAccount`: the Foundry Account dialog (sign in, create an account, sign out).
 pub fn account(app: &mut VectorcraftApp, _p: &Value) -> Result<Value, String> {
     app.maker.publish_next = false;
@@ -171,10 +177,15 @@ fn send(app: &mut VectorcraftApp, request: Request, what: Pending) -> Result<(),
         return Err("MakerFoundry can't be reached from this version of ScreenFoundry".into());
     };
     let mailbox = app.maker.mailbox.clone();
+    // the answer may come from another thread while the window is idle: wake it to show the answer
+    let ctx = app.ui_ctx.clone();
     http(
         request,
         Box::new(move |answer| {
             *mailbox.lock().unwrap_or_else(|e| e.into_inner()) = Some(answer);
+            if let Some(ctx) = ctx {
+                ctx.request_repaint();
+            }
         }),
     );
     app.maker.pending = Some(what);
@@ -209,7 +220,7 @@ fn signed_in(app: &mut VectorcraftApp, answer: Result<Response, String>) {
             app.maker.session = Some(session);
             if std::mem::take(&mut app.maker.publish_next) {
                 open_publish(app);
-            } else {
+            } else if app.ui.dialog.as_ref().is_some_and(|d| d.kind == ACCOUNT_KIND) {
                 app.ui.dialog = None;
             }
         }
@@ -225,7 +236,9 @@ fn published(app: &mut VectorcraftApp, publish: &Publish, answer: Result<Respons
     match answer.and_then(|r| publish.answer(&r)) {
         Ok(draft) => {
             app.maker.prepared = None;
-            app.ui.dialog = None;
+            if app.ui.dialog.as_ref().is_some_and(|d| d.kind == PUBLISH_KIND) {
+                app.ui.dialog = None;
+            }
             app.open_url(&draft.url);
             app.status(tl!("Your draft is open on MakerFoundry: add its title, price and licence there, and publish it."));
         }

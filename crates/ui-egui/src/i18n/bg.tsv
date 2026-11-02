@@ -5506,7 +5506,7 @@ theme	Appearance	Външен вид
 	Stitch Lines	Линии на бодовете
 	Tatami	Татами
 	By SiteSentrix, based on VectorCraft by the ArtCraft team. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	От SiteSentrix, на основата на VectorCraft от екипа на ArtCraft. MIT OR Apache-2.0. Шрифтове: Source Sans 3, Inter, JetBrains Mono (OFL). Икони: Lucide (ISC) + VectorCraft.
-	Version {version} — open-source machine embroidery digitizing in pure Rust.	Версия {version} — дигитализиране на машинна бродерия с отворен код, изцяло на Rust.
+	Version {version} — open-source screen-printing prepress in pure Rust.	Версия {version} — софтуер с отворен код за предпечат за ситопечат на чист Rust.
 	Machine embroidery digitizing — fast, open, scriptable.	Дигитализиране на машинна бродерия — бързо, отворено, с възможност за скриптове.
 	Split Here	Разделяне тук
 	Split the object in two at the picked stitch	Разделяне на обекта на две при избрания бод

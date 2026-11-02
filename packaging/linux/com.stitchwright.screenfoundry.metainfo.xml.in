@@ -23,6 +23,8 @@
   <url type="homepage">https://github.com/Stitchwright/screenfoundry</url>
   <url type="bugtracker">https://github.com/Stitchwright/screenfoundry/issues</url>
   <url type="help">https://github.com/Stitchwright/screenfoundry</url>
+  <!-- Optional: ScreenFoundry is free; software centres show this as a Donate link. -->
+  <url type="donation">https://buymeacoffee.com/bwattendorf</url>
   <categories>
     <category>Graphics</category>
     <category>2DGraphics</category>

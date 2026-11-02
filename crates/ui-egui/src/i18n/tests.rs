@@ -1041,6 +1041,8 @@ const COMPLETE_UPSTREAM: [&str; 0] = [];
 /// Each language's own name in the Language menu is left alone too.
 const MENU_KEEP_AS_IS: &[&str] = &[
     "ScreenFoundry",
+    "Buy Me a Coffee",
+    "MakerFoundry on YouTube",
     "OpenType",
     "Essentials",
     "Essentials Classic",

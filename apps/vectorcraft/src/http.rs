@@ -22,9 +22,21 @@ pub(crate) fn send(request: Request, done: HttpDone) {
         done(Err(e));
         return;
     }
-    let spawned = std::thread::Builder::new().name("maker-http".into()).spawn(move || done(request_blocking(&request)));
+    // `done` stays reachable if the thread can't start, so the person is told rather than left waiting
+    let slot = std::sync::Arc::new(std::sync::Mutex::new(Some(done)));
+    let taken = slot.clone();
+    let spawned = std::thread::Builder::new().name("maker-http".into()).spawn(move || {
+        let done = taken.lock().unwrap_or_else(|e| e.into_inner()).take();
+        if let Some(done) = done {
+            done(request_blocking(&request));
+        }
+    });
     if let Err(e) = spawned {
         log::error!("could not start the request thread: {e}");
+        let done = slot.lock().unwrap_or_else(|e| e.into_inner()).take();
+        if let Some(done) = done {
+            done(Err("Couldn't start the request: try again.".into()));
+        }
     }
 }
 
@@ -52,7 +64,13 @@ fn request_with(request: &Request, system_proxy: bool) -> Result<Response, Strin
     let mut answer = agent.run(http).map_err(|e| describe(&e))?;
     let status = answer.status().as_u16();
     let mut body = String::new();
-    answer.body_mut().as_reader().take(MAX_ANSWER).read_to_string(&mut body).unwrap_or_default();
+    // a body cut off or not text is no answer: say so, not "empty"
+    answer
+        .body_mut()
+        .as_reader()
+        .take(MAX_ANSWER)
+        .read_to_string(&mut body)
+        .map_err(|_| "The service's answer couldn't be read. Try again later.".to_string())?;
     Ok(Response { status, body })
 }
 
