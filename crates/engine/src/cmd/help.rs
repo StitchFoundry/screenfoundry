@@ -13,6 +13,12 @@ pub const GITHUB_URL: &str = "https://github.com/Stitchwright/screenfoundry";
 // `program=stitchfoundry` below is the name the hub knows this app by; it switches to `screenfoundry` once the hub has that program.
 pub const BUG_REPORT_URL: &str = "https://hub.stitchbench.app/report-a-bug";
 
+/// The page where people can buy the maker a coffee (a donation page: ScreenFoundry stays free).
+pub const SUPPORT_URL: &str = "https://buymeacoffee.com/bwattendorf";
+
+/// The MakerFoundry YouTube channel.
+pub const YOUTUBE_URL: &str = "https://www.youtube.com/@MakerFoundryApp";
+
 /// The user guide, compiled in for the Help window.
 const GUIDE: &str = include_str!("../../../../docs/guide.md");
 
@@ -22,6 +28,8 @@ const MAX_FOUND: usize = 40;
 pub fn specs() -> Vec<CommandSpec> {
     vec![
         cmd!(query "help.github", "ScreenFoundry on GitHub", ["Help"], None, "{} → {url} source code, issues and releases", always, |_, _| url(GITHUB_URL.into())),
+        cmd!(query "help.support", "Buy Me a Coffee", ["Help"], None, "{} → {url} the donation page (ScreenFoundry is free; this is optional)", always, |_, _| url(SUPPORT_URL.into())),
+        cmd!(query "help.youtube", "MakerFoundry on YouTube", ["Help"], None, "{} → {url} the MakerFoundry YouTube channel", always, |_, _| url(YOUTUBE_URL.into())),
         cmd!(
             query "help.reportBug",
             "Report a Bug…",
@@ -31,7 +39,7 @@ pub fn specs() -> Vec<CommandSpec> {
             always,
             |_, _| url(bug_report_url(env!("CARGO_PKG_VERSION"), std::env::consts::OS, std::env::consts::ARCH))
         ),
-        cmd!(query "help.links", "Links", [], None, "{} → {github}", always, |_, _| Ok(json!({ "github": GITHUB_URL }))),
+        cmd!(query "help.links", "Links", [], None, "{} → {github, support, youtube}", always, |_, _| Ok(json!({ "github": GITHUB_URL, "support": SUPPORT_URL, "youtube": YOUTUBE_URL }))),
         cmd!(
             query "help.topics",
             "Help Topics",
@@ -167,6 +175,10 @@ mod tests {
         let mut s = Session::new();
         assert_eq!(s.execute("help.github", &json!({})).unwrap()["url"], GITHUB_URL);
         assert_eq!(s.execute("help.links", &json!({})).unwrap()["github"], GITHUB_URL);
+        assert_eq!(s.execute("help.support", &json!({})).unwrap()["url"], "https://buymeacoffee.com/bwattendorf");
+        assert_eq!(s.execute("help.youtube", &json!({})).unwrap()["url"], "https://www.youtube.com/@MakerFoundryApp");
+        let l = s.execute("help.links", &json!({})).unwrap();
+        assert_eq!((l["support"].as_str(), l["youtube"].as_str()), (Some(SUPPORT_URL), Some(YOUTUBE_URL)));
         // VectorCraft's community links (its Discord and website) are not this app's
         assert!(s.execute("help.discord", &json!({})).is_err());
         assert!(s.execute("help.website", &json!({})).is_err());

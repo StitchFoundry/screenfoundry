@@ -6536,7 +6536,7 @@ imageTrace	Outline	კონტური
 	Use Line as Direction	ხაზის მიმართულებად გამოყენება
 	Use This Size	ამ ზომის გამოყენება
 	Valley	ხეობა
-	Version {version} — open-source machine embroidery digitizing in pure Rust.	ვერსია {version} — მანქანური ქარგვის ღია კოდის დიჯიტალიზაცია სუფთა Rust-ზე.
+	Version {version} — open-source screen-printing prepress in pure Rust.	ვერსია {version} — ღია კოდის წინასაბეჭდი მომზადება ბადით ბეჭდვისთვის სუფთა Rust-ზე.
 	Very dense: about {n} layers of thread here	ძალიან მჭიდრო: აქ ძაფის დაახლოებით {n} ფენაა
 	Waiting for the folder	საქაღალდის მოლოდინი
 	Wash-away	წყალში ხსნადი

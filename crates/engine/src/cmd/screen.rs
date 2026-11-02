@@ -217,9 +217,19 @@ fn artboard_art(s: &Session, cmd: &str, index: usize, dpi: f64) -> Result<Rgba8>
     let st = s.doc().map_err(|_| bad(cmd, "no document is open: give `source` as {path} or {dataBase64}"))?;
     let region = st.doc.artboards.get(index).ok_or_else(|| bad(cmd, format!("the document has no artboard {}", index + 1)))?.rect;
     let scale = dpi / 72.0;
-    vectorcraft_render::raster_size(region, scale).map_err(|e| bad(cmd, e))?;
+    let (w, h) = vectorcraft_render::raster_size(region, scale).map_err(|e| bad(cmd, e))?;
+    // Refuse before rendering what `Rgba8` would refuse after: no point allocating it first.
+    if u64::from(w) * u64::from(h) > sc_core::image::MAX_PIXELS as u64 {
+        return Err(bad(cmd, too_many_pixels(&format!("artboard {}", index + 1), u64::from(w) * u64::from(h), dpi)));
+    }
     let r = vectorcraft_render::Renderer::new().render_region(&st.doc, region, scale, false);
     Rgba8::new(r.width as usize, r.height as usize, r.to_straight()).map_err(sc(cmd))
+}
+
+/// Why `what` (`u64` pixels at `dpi`) is refused: over the pipeline's image size cap.
+fn too_many_pixels(what: &str, pixels: u64, dpi: f64) -> String {
+    let max_mp = sc_core::image::MAX_PIXELS / 1_000_000;
+    format!("{what} would be {} megapixels at {dpi} dpi and the limit is {max_mp}: lower `dpi`", pixels.div_ceil(1_000_000))
 }
 
 fn palette(s: &mut Session, p: &Value) -> Result<Value> {
@@ -680,6 +690,18 @@ fn dtf_files(s: &mut Session, p: &Value) -> Result<Value> {
             };
             let width_mm = num_req(p, C, "sheetWidthMm", 10.0..=2000.0)?;
             let gap = px(num(p, C, "gapMm", 5.0, 0.0..=100.0)?);
+            // The sheet holds every design, so it is at least their total area: refuse a sheet
+            // that can't fit under the size cap before rendering any of them.
+            let doc = &s.doc().map_err(|_| bad(C, "no document is open"))?.doc;
+            let mut total = 0u64;
+            for &n in &wanted {
+                let region = doc.artboards.get(n - 1).ok_or_else(|| bad(C, format!("the document has no artboard {n}")))?.rect;
+                let (w, h) = vectorcraft_render::raster_size(region, dpi / 72.0).map_err(|e| bad(C, e))?;
+                total = total.saturating_add(u64::from(w) * u64::from(h));
+            }
+            if total > sc_core::image::MAX_PIXELS as u64 {
+                return Err(bad(C, format!("{} (use fewer artboards)", too_many_pixels("the artboards together", total, dpi))));
+            }
             let designs = wanted.iter().map(|&n| artboard_art(s, C, n - 1, dpi)).collect::<Result<Vec<_>>>()?;
             let (sheet, put) = gang_sheet(&designs, px(width_mm).max(1), gap, bool_or(p, "rotate", false)).map_err(sc(C))?;
             let mm = |v: usize| (v as f64 / dpi * 25.4 * 10.0).round() / 10.0;

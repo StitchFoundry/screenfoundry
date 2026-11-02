@@ -20,7 +20,7 @@ pub fn js(e: JsValue) -> String {
     e.as_string().or_else(|| Reflect::get(&e, &"message".into()).ok().and_then(|m| m.as_string())).unwrap_or_else(|| format!("{e:?}"))
 }
 
-/// Fetch `url`: credentials omitted, redirects an error, aborted after `options.seconds`.
+/// Fetch `url`: credentials omitted, redirects an error, aborted after `options.seconds` (reading the body counts).
 pub async fn fetch(url: &str, options: &Options) -> Result<web_sys::Response, String> {
     let window = web_sys::window().ok_or("no window")?;
     let init = web_sys::RequestInit::new();
@@ -47,8 +47,15 @@ pub async fn fetch(url: &str, options: &Options) -> Result<web_sys::Response, St
         )
         .map_err(js)?;
     let answer = JsFuture::from(window.fetch_with_str_and_init(url, &init)).await;
-    window.clear_timeout_with_handle(timer);
-    answer.map_err(|_| "the request failed (no answer, too slow, or not allowed by the site)".to_string())?.dyn_into().map_err(js)
+    // The timer stays armed on success so the time limit covers reading the body too: aborting a
+    // request that has finished is a no-op. Only a failure cancels it.
+    match answer {
+        Ok(response) => response.dyn_into().map_err(js),
+        Err(_) => {
+            window.clear_timeout_with_handle(timer);
+            Err("the request failed (no answer, too slow, or not allowed by the site)".to_string())
+        }
+    }
 }
 
 /// The body of `response`, at most `max` bytes: reading stops, and the rest is cancelled, as soon as

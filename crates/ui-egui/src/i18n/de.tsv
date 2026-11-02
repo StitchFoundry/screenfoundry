@@ -4886,7 +4886,7 @@ lighting	Light	Licht
 
 # Embroidery (ScreenFoundry), phase 1
 	By SiteSentrix, based on VectorCraft by the ArtCraft team. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	Von SiteSentrix, auf Basis von VectorCraft vom ArtCraft-Team. MIT OR Apache-2.0. Schriften: Source Sans 3, Inter, JetBrains Mono (OFL). Symbole: Lucide (ISC) + VectorCraft.
-	Version {version} — open-source machine embroidery digitizing in pure Rust.	Version {version} – Open-Source-Maschinenstickerei-Digitalisierung in reinem Rust.
+	Version {version} — open-source screen-printing prepress in pure Rust.	Version {version} – Open-Source-Druckvorstufe für den Siebdruck in reinem Rust.
 	Machine embroidery digitizing — fast, open, scriptable.	Maschinenstickerei digitalisieren – schnell, offen, skriptfähig.
 	Split Here	Hier teilen
 	Split the object in two at the picked stitch	Das Objekt am ausgewählten Stich in zwei teilen
