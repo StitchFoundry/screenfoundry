@@ -232,7 +232,7 @@ fn a_script_or_assistant_cannot_press_send_or_type_the_password() {
     use crate::control::{ControlRequest, Outcome};
     let (mut app, seen, _) = app(vec![signed_in(), draft()]);
     let ctx = egui::Context::default();
-    let mut call = |app: &mut VectorcraftApp, method: &str, params: Value| {
+    let call = |app: &mut VectorcraftApp, method: &str, params: Value| {
         let (req, _rx) = ControlRequest::new(method, params);
         let Outcome::Done(r) = crate::control::handle(app, &ctx, &req) else { panic!("not done") };
         r
