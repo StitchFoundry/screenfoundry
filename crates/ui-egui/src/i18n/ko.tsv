@@ -5147,7 +5147,7 @@ effect	Points	포인트
 	Stitch Lines	스티치 선
 	Tatami	타타미
 	By SiteSentrix, based on VectorCraft by the ArtCraft team. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	SiteSentrix 제작, ArtCraft 팀의 VectorCraft 기반. MIT OR Apache-2.0. 글꼴: Source Sans 3, Inter, JetBrains Mono (OFL). 아이콘: Lucide (ISC) + VectorCraft.
-	Version {version} — open-source machine embroidery digitizing in pure Rust.	버전 {version} — 순수 Rust로 만든 오픈 소스 기계 자수 디지타이징.
+	Version {version} — open-source screen-printing prepress in pure Rust.	버전 {version} — 순수 Rust로 만든 오픈 소스 스크린 인쇄 제판 소프트웨어.
 	Machine embroidery digitizing — fast, open, scriptable.	기계 자수 디지타이징 — 빠르고, 열려 있고, 스크립트로 제어 가능.
 	Split Here	여기서 분할
 	Split the object in two at the picked stitch	선택한 스티치에서 개체를 둘로 분할

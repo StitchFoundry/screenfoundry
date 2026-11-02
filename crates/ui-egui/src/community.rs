@@ -23,6 +23,10 @@ pub fn links(app: &mut VectorcraftApp, ui: &mut Ui) {
     let l = app.session.execute("help.links", &serde_json::json!({})).unwrap_or_default();
     let github = l["github"].as_str().unwrap_or("").to_string();
     link(app, ui, "git-branch", tl!("Source code on GitHub"), "help.github", &github);
+    // Optional extras: the donation page and the MakerFoundry channel (product names, shown as they are).
+    let (support, youtube) = (l["support"].as_str().unwrap_or("").to_string(), l["youtube"].as_str().unwrap_or("").to_string());
+    link(app, ui, "external-link", tl!("Buy Me a Coffee"), "help.support", &support);
+    link(app, ui, "external-link", tl!("MakerFoundry on YouTube"), "help.youtube", &youtube);
 }
 
 #[cfg(test)]
@@ -39,6 +43,10 @@ mod tests {
         let mut app = VectorcraftApp::new(vectorcraft_engine::Session::new(), services);
         crate::menus::invoke(&mut app, "help.github", serde_json::json!({}));
         assert_eq!(*opened.lock().unwrap(), ["https://github.com/Stitchwright/screenfoundry"]);
+        crate::menus::invoke(&mut app, "help.support", serde_json::json!({}));
+        crate::menus::invoke(&mut app, "help.youtube", serde_json::json!({}));
+        assert_eq!(opened.lock().unwrap()[1..], ["https://buymeacoffee.com/bwattendorf", "https://www.youtube.com/@MakerFoundryApp"]);
+        opened.lock().unwrap().truncate(1);
         // The control channel / MCP path returns the URL without opening a browser.
         let v = app.run("help.github", serde_json::json!({})).unwrap();
         assert_eq!(v["url"], "https://github.com/Stitchwright/screenfoundry");

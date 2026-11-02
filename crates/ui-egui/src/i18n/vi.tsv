@@ -5148,7 +5148,7 @@ effect	Points	Điểm
 	Stitch Lines	Đường mũi thêu
 	Tatami	Tatami
 	By SiteSentrix, based on VectorCraft by the ArtCraft team. MIT OR Apache-2.0. Fonts: Source Sans 3, Inter, JetBrains Mono (OFL). Icons: Lucide (ISC) + VectorCraft.	Bởi SiteSentrix, dựa trên VectorCraft của nhóm ArtCraft. MIT OR Apache-2.0. Phông chữ: Source Sans 3, Inter, JetBrains Mono (OFL). Biểu tượng: Lucide (ISC) + VectorCraft.
-	Version {version} — open-source machine embroidery digitizing in pure Rust.	Phiên bản {version} — phần mềm số hóa thêu máy mã nguồn mở viết hoàn toàn bằng Rust.
+	Version {version} — open-source screen-printing prepress in pure Rust.	Phiên bản {version} — phần mềm tiền in cho in lụa mã nguồn mở viết hoàn toàn bằng Rust.
 	Machine embroidery digitizing — fast, open, scriptable.	Số hóa thêu máy — nhanh, mở, có thể lập trình.
 	Split Here	Chia tại đây
 	Split the object in two at the picked stitch	Chia đối tượng làm hai tại mũi thêu đã chọn

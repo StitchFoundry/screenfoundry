@@ -54,7 +54,7 @@ fn about_tab(app: &mut VectorcraftApp, ui: &mut egui::Ui) {
         ui.vertical(|ui| {
             ui.label(egui::RichText::new(crate::native_menu::APP_NAME).font(theme::semibold(22.0)));
             ui.label(crate::i18n::fmt(
-                tl!("Version {version} — open-source machine embroidery digitizing in pure Rust."),
+                tl!("Version {version} — open-source screen-printing prepress in pure Rust."),
                 &[("version", env!("CARGO_PKG_VERSION"))],
             ));
         });

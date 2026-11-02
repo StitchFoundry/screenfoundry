@@ -48,6 +48,11 @@ The full app build is the inherited one; see [`docs/development.md`](docs/develo
 - [`docs/research/silkscreen-landscape.md`](docs/research/silkscreen-landscape.md): the market and technique research.
 - [`CLAUDE.md`](CLAUDE.md): rules for agents (clean-room, no panics, everything is a command).
 
+## Support
+
+ScreenFoundry is free and open source. If it saves you time you can [buy me a coffee](https://buymeacoffee.com/bwattendorf) (optional), and
+videos are on the [MakerFoundry YouTube channel](https://www.youtube.com/@MakerFoundryApp). Bugs and ideas: [GitHub issues](https://github.com/Stitchwright/screenfoundry/issues).
+
 ## Licence
 
 MIT OR Apache-2.0 ([`LICENSE-MIT`](LICENSE-MIT), [`LICENSE-APACHE`](LICENSE-APACHE)). Based on
