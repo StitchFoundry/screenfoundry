@@ -68,4 +68,54 @@ mod tests {
         p.reserve();
         assert!(p.finish(root).is_err());
     }
+
+    #[test]
+    fn xref_offsets_point_at_their_objects() {
+        let mut p = Pdf::new();
+        let a = p.add(b"<< /Type /Catalog >>");
+        let b = p.add(b"<< /N 2 >>");
+        let bytes = p.finish(a).unwrap();
+        let text = String::from_utf8_lossy(&bytes).into_owned();
+        // The header carries non-UTF-8 bytes, so offsets are checked against `bytes`, not `text`.
+        let xref = bytes.windows(6).rposition(|w| w == b"\nxref\n").unwrap() + 1;
+        let tail = String::from_utf8_lossy(&bytes[xref..]).into_owned();
+        let rows: Vec<&str> = tail.lines().skip(3).take(2).collect();
+        for (row, id) in rows.iter().zip([a, b]) {
+            let off: usize = row[..10].parse().unwrap();
+            assert!(bytes[off..].starts_with(format!("{id} 0 obj\n").as_bytes()));
+        }
+        assert!(text.contains("/Size 3 /Root 1 0 R"));
+        let start: usize = tail.rsplit("startxref\n").next().unwrap().lines().next().unwrap().parse().unwrap();
+        assert_eq!(start, xref);
+        assert!(text.ends_with("%%EOF\n"));
+    }
+
+    #[test]
+    fn set_with_an_unknown_id_is_ignored_and_forward_references_work() {
+        let mut p = Pdf::new();
+        let id = p.reserve();
+        p.set(0, b"x");
+        p.set(99, b"x");
+        assert!(p.out.len() == Pdf::new().out.len(), "bad ids must write nothing");
+        p.set(id, b"<< >>");
+        assert!(p.finish(id).is_ok());
+    }
+
+    #[test]
+    fn an_empty_document_still_has_a_valid_trailer() {
+        let bytes = Pdf::new().finish(1).unwrap();
+        let text = String::from_utf8_lossy(&bytes);
+        assert!(text.starts_with("%PDF-1.4"));
+        assert!(text.contains("0 1\n0000000000 65535 f"));
+    }
+
+    #[test]
+    fn stream_length_counts_binary_bytes() {
+        let data = [0u8, 255, 10, 13, 0];
+        let s = stream("/Filter /X", &data);
+        let head = String::from_utf8_lossy(&s[..30]).into_owned();
+        assert!(head.contains("/Length 5 >>"));
+        assert!(s.ends_with(b"\nendstream"));
+        assert!(stream("", &[]).starts_with(b"<<  /Length 0 >>"));
+    }
 }
