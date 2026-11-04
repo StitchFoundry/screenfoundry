@@ -8,3 +8,4 @@
 - 2026-11-01 nightly sweep: no needs-triage issues; history secret scan clean; cargo audit unchanged (#19). Filed #23 and fixed it here: `screen.dtf` gang sheets and `artboard_art` now refuse over-cap sizes before rendering.
 - Main: `cargo xtask ci` all green except wasm (target missing here; passes once installed): 11,037 tests pass.
 - 2026-11-02 nightly maintenance: queue empty; `cargo xtask ci` showed no failures (cut off by my 50-min timeout during the slow fuzz tests); sc-core tests stable over 3 runs. Added `pdfout.rs` tests (xref offsets, trailer, bad ids, stream length). Tests only.
+- 2026-11-04 nightly maintenance: queue empty; `cargo xtask ci` cut off by the 30-min background limit with no failures seen; sc-core tests stable over 3 runs (130 pass). Added `color.rs` tests (grey chroma, delta-E symmetry, hex edges). Tests only.

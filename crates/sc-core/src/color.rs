@@ -70,4 +70,35 @@ mod tests {
         let r = srgb_to_lab([255, 0, 0]);
         assert!((r[0] - 53.24).abs() < 0.1 && r[1] > 70.0);
     }
+
+    #[test]
+    fn greys_have_no_chroma_and_lightness_rises() {
+        let mut last = -1.0;
+        for v in (0..=255u8).step_by(15) {
+            let l = srgb_to_lab([v, v, v]);
+            assert!(l[1].abs() < 0.05 && l[2].abs() < 0.05, "{v}: {l:?}");
+            assert!(l[0] > last, "{v}");
+            last = l[0];
+        }
+    }
+
+    #[test]
+    fn delta_e_is_zero_for_equal_symmetric_and_nonnegative() {
+        let a = srgb_to_lab([200, 30, 90]);
+        let b = srgb_to_lab([10, 220, 140]);
+        assert_eq!(delta_e_sq(a, a), 0.0);
+        assert_eq!(delta_e_sq(a, b), delta_e_sq(b, a));
+        assert!(delta_e_sq(a, b) > 0.0);
+    }
+
+    #[test]
+    fn hex_edge_cases() {
+        assert_eq!(parse_hex("  #FFF  "), Some([255, 255, 255]));
+        assert_eq!(parse_hex("##fff"), Some([255, 255, 255]), "leading hashes are all trimmed");
+        assert_eq!(parse_hex("+f0"), None);
+        assert_eq!(to_hex([0, 0, 0]), "#000000");
+        for c in [[0, 0, 0], [1, 2, 3], [255, 255, 255], [18, 171, 205]] {
+            assert_eq!(parse_hex(&to_hex(c)), Some(c));
+        }
+    }
 }
