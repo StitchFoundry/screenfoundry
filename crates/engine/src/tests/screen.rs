@@ -117,6 +117,51 @@ fn artwork_can_come_from_image_bytes_without_a_document() {
     assert_eq!(r["films"].as_array().unwrap().len(), 2);
 }
 
+/// A valid one-bit, all-black grayscale PNG of `w`×`h`: a few kilobytes of file for a
+/// very large image.
+fn one_bit_png(w: u32, h: u32) -> Vec<u8> {
+    use std::io::Write;
+    let chunk = |out: &mut Vec<u8>, kind: &[u8; 4], data: &[u8]| {
+        out.extend_from_slice(&(data.len() as u32).to_be_bytes());
+        out.extend_from_slice(kind);
+        out.extend_from_slice(data);
+        let mut crc = crc32fast::Hasher::new();
+        crc.update(kind);
+        crc.update(data);
+        out.extend_from_slice(&crc.finalize().to_be_bytes());
+    };
+    let mut ihdr = Vec::new();
+    ihdr.extend_from_slice(&w.to_be_bytes());
+    ihdr.extend_from_slice(&h.to_be_bytes());
+    ihdr.extend_from_slice(&[1, 0, 0, 0, 0]); // 1-bit grayscale, deflate, no filter, no interlace
+    let row = vec![0u8; 1 + (w as usize).div_ceil(8)];
+    let mut z = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::fast());
+    for _ in 0..h {
+        z.write_all(&row).unwrap();
+    }
+    let mut png = b"\x89PNG\r\n\x1a\n".to_vec();
+    chunk(&mut png, b"IHDR", &ihdr);
+    chunk(&mut png, b"IDAT", &z.finish().unwrap());
+    chunk(&mut png, b"IEND", &[]);
+    png
+}
+
+#[test]
+fn an_image_over_the_size_cap_is_refused_from_its_header() {
+    // 12000×10000 is 120 megapixels, over the 100 MP cap: refused before it is decoded and
+    // widened to RGBA (480 MB), with the size in the message.
+    let mut s = Session::new();
+    let png = one_bit_png(12_000, 10_000);
+    let src = json!({"dataBase64": vectorcraft_format::base64_encode(&png)});
+    let e = s.execute("screen.palette", &json!({"source": src})).unwrap_err().to_string();
+    assert!(e.contains("12000×10000") && e.contains("120 megapixels") && e.contains("limit is 100"), "{e}");
+    // The same file under the cap still reads.
+    let png = one_bit_png(64, 32);
+    let src = json!({"dataBase64": vectorcraft_format::base64_encode(&png)});
+    let pal = s.execute("screen.palette", &json!({"source": src})).unwrap();
+    assert_eq!((pal["width"].as_u64(), pal["height"].as_u64()), (Some(64), Some(32)));
+}
+
 #[test]
 fn halftone_screens_a_gray_ramp_and_reports_mesh_advice() {
     let mut s = Session::new();

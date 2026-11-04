@@ -195,6 +195,15 @@ fn artwork(s: &Session, p: &Value, cmd: &str, dpi: f64) -> Result<Rgba8> {
     };
     match bytes {
         Some(bytes) => {
+            // Refuse an image over the pipeline's size cap from its header, before decoding it
+            // and widening it to RGBA (which needs four bytes a pixel whatever the file holds).
+            let header = image::ImageReader::new(Cursor::new(&bytes)).with_guessed_format().map_err(|e| bad(cmd, e.to_string()))?;
+            let (w, h) = header.into_dimensions().map_err(|e| bad(cmd, format!("can't read the image: {e}")))?;
+            let pixels = u64::from(w) * u64::from(h);
+            if pixels > sc_core::image::MAX_PIXELS as u64 {
+                let max_mp = sc_core::image::MAX_PIXELS / 1_000_000;
+                return Err(bad(cmd, format!("the image is {w}×{h}, {} megapixels, and the limit is {max_mp}", pixels.div_ceil(1_000_000))));
+            }
             let mut reader = image::ImageReader::new(Cursor::new(bytes)).with_guessed_format().map_err(|e| bad(cmd, e.to_string()))?;
             let mut limits = image::Limits::default();
             limits.max_image_width = Some(MAX_IMAGE_SIDE);
