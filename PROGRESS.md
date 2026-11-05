@@ -9,3 +9,4 @@
 - Main: `cargo xtask ci` all green except wasm (target missing here; passes once installed): 11,037 tests pass.
 - 2026-11-02 nightly maintenance: queue empty; `cargo xtask ci` showed no failures (cut off by my 50-min timeout during the slow fuzz tests); sc-core tests stable over 3 runs. Added `pdfout.rs` tests (xref offsets, trailer, bad ids, stream length). Tests only.
 - 2026-11-03 nightly sweep: no needs-triage issues; history secret scan clean; cargo audit unchanged (#19). Filed #32 and fixed it here: `screen.*` commands refuse a source image over the 100 MP cap from its header, before decoding it.
+- 2026-11-04: flaky render test `a_ready_bitmap_draws_again_where_its_file_shows` fixed: a background worker could make both bitmaps before the first frame finished, so the frame already showed them ("the bitmaps show" failed, e.g. on PR #37). The test now holds the workers (test-only `hold_workers`) while it draws that frame.
