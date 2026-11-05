@@ -130,6 +130,17 @@ pub(crate) fn scheduled(key: &str) -> usize {
     lock(&SCHEDULED).get(key).copied().unwrap_or(0)
 }
 
+/// Held by a test, the background workers make no bitmap until it lets go: a frame drawn
+/// meanwhile shows its placeholders however quickly a worker would have made them (tests).
+#[cfg(test)]
+static HOLD: Mutex<()> = Mutex::new(());
+
+/// Keep the background workers from making bitmaps while the guard is held.
+#[cfg(test)]
+pub(crate) fn hold_workers() -> MutexGuard<'static, ()> {
+    lock(&HOLD)
+}
+
 /// Mark the bitmap of file `key` at zoom `step` as not kept past [`MAX_BYTES`].
 #[cfg(test)]
 pub(crate) fn mark_unkept(key: &str, step: f64) {
@@ -321,6 +332,9 @@ mod workers {
                 loop {
                     let job = super::lock(&rx).recv();
                     let Ok(job) = job else { break };
+                    // A test holding the workers: wait until it lets go.
+                    #[cfg(test)]
+                    drop(super::lock(&super::HOLD));
                     // A panic loses this bitmap, not the worker; it is not asked for again.
                     let key = job.key.clone();
                     if std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| super::run(&mut r, *job))).is_err() {
