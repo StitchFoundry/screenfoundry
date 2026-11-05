@@ -251,7 +251,11 @@ fn a_ready_bitmap_draws_again_where_its_file_shows() {
     let opts = RenderOptions { background: Some([255, 255, 255, 255]), progressive_placed: true, ..Default::default() };
     let mut r = Renderer::new();
     let generation = placed_document::generation();
+    // The workers wait until the frame is drawn, so it shows the placeholders: a worker quicker
+    // than the frame would otherwise put a bitmap in it already.
+    let hold = placed_document::hold_workers();
     let before = r.render(&d, 100, 100, Affine::IDENTITY, &opts);
+    drop(hold);
     settle();
     let made = placed_document::made_between(generation, placed_document::generation()).expect("known");
     let files = |keys: &[&str]| keys.iter().map(|k| k.to_string()).collect::<std::collections::HashSet<_>>();
