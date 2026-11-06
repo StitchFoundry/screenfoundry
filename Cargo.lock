@@ -2211,9 +2211,9 @@ checksum = "9f4d0e94ddd48749f06bbe4e5389fb9799a0c45bcaf00495042076ef05e3241a"
 
 [[package]]
 name = "hayro-ccitt"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2866f0d976e76497480b853d5e258dab6e4b89ecfe991124e08f15dfa8fd03ad"
+checksum = "adbed896e99325bc312778bb9c9c289d795d51c12775c44dd5e4352f679c7e46"
 
 [[package]]
 name = "hayro-cmap"
@@ -6311,7 +6311,7 @@ name = "vectorcraft-doc"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "hayro-ccitt 0.4.0",
+ "hayro-ccitt 0.5.0",
  "image",
  "jpeg-encoder",
  "kurbo 0.13.1",
@@ -6389,7 +6389,7 @@ version = "0.1.0"
 dependencies = [
  "fax 0.3.0",
  "flate2",
- "hayro-ccitt 0.4.0",
+ "hayro-ccitt 0.5.0",
  "image",
  "kurbo 0.13.1",
  "memchr",

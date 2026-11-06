@@ -98,7 +98,7 @@ rustix = { version = "1.1", default-features = false }
 ruzstd = { version = "0.9.1", default-features = false, features = ["std"] }
 # CCITT Group 3 and Group 4 decoder (ITU-T T.4 and T.6): EPS images read through
 # `CCITTFaxDecode`. The PDF reader's hayro-syntax uses the same version.
-hayro-ccitt = "0.4"
+hayro-ccitt = "0.5"
 # Substring search for the EPS reader's PostScript `search`.
 memchr = "2"
 jpeg-encoder = { version = "0.7", default-features = false, features = ["std"] }
