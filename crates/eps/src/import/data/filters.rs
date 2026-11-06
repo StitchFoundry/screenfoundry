@@ -442,7 +442,8 @@ pub(super) fn fax_settings(d: Option<&DictRef>) -> Res<Fax> {
             end_of_line: flag("EndOfLine", false),
             rows_are_byte_aligned: flag("EncodedByteAlign", false),
             encoding,
-            strict: false,
+            // Damaged data ends the rows (see `fax`), as hayro-ccitt 0.4 did, instead of being patched over.
+            strict: true,
         },
         black_is_1: flag("BlackIs1", false),
     })

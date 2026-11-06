@@ -440,7 +440,8 @@ pub fn group3_tiff_rgba(bytes: &[u8]) -> Option<Result<image::RgbaImage, Group3E
             end_of_line: compression == 3,
             rows_are_byte_aligned: compression == 2,
             encoding,
-            strict: false,
+            // Refuse damaged or cut-short data, as hayro-ccitt 0.4 did (0.5 can patch it over).
+            strict: true,
         };
         let mut rows = Rows { out: &mut gray, width: w, height: h, x0, y0, columns: cw, x: 0, y: 0, zero };
         if let Err(e) = hayro_ccitt::decode(&data, &mut rows, &mut DecoderContext::new(settings)) {
