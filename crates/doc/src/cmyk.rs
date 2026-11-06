@@ -495,10 +495,11 @@ impl Rows<'_> {
 impl hayro_ccitt::Decoder for Rows<'_> {
     /// One decoded row: it starts white and the colour flips at each position in `changes`.
     fn push_row(&mut self, changes: &[u32]) {
+        let columns = self.columns;
         let mut at = 0u32;
         let mut white = true;
-        for &c in changes.iter().chain(std::iter::once(&self.columns)) {
-            let c = c.min(self.columns);
+        for &c in changes.iter().chain(std::iter::once(&columns)) {
+            let c = c.min(columns);
             if c > at {
                 self.run(white, u64::from(c - at));
                 at = c;

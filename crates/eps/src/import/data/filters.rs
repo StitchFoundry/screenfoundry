@@ -254,12 +254,13 @@ impl FaxRows {
 impl Decoder for FaxRows {
     /// One decoded row: it starts white and the colour flips at each position in `changes`.
     fn push_row(&mut self, changes: &[u32]) {
+        let (columns, black_is_1) = (self.columns, self.black_is_1);
         let mut at = 0u32;
         let mut white = true;
-        for &c in changes.iter().chain(std::iter::once(&self.columns)) {
-            let c = c.min(self.columns);
+        for &c in changes.iter().chain(std::iter::once(&columns)) {
+            let c = c.min(columns);
             if c > at {
-                self.run(white ^ self.black_is_1, c - at);
+                self.run(white ^ black_is_1, c - at);
                 at = c;
             }
             white = !white;
