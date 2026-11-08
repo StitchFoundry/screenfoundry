@@ -14,7 +14,7 @@ section: graphics
 priority: optional
 maintainer: ${VECTORCRAFT_MAINTAINER}
 vendor: StitchFoundry
-homepage: https://github.com/Stitchwright/screenfoundry
+homepage: https://github.com/StitchFoundry/screenfoundry
 license: MIT OR Apache-2.0
 description: |-
   Open-source screen-printing prepress, built on a full vector editor.

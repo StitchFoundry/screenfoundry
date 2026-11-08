@@ -11,7 +11,7 @@ use craft_update::updater::{Action, Status, Updater};
 /// nowhere else. (The suite's VectorCraft entry would look in VectorCraft's, whose newer version
 /// numbers would offer VectorCraft's installers in place of ScreenFoundry.)
 #[cfg(not(target_arch = "wasm32"))]
-pub const APP: craft_update::App = craft_update::App::new("screenfoundry", "ScreenFoundry", "Screen-printing prepress", "Stitchwright/screenfoundry");
+pub const APP: craft_update::App = craft_update::App::new("screenfoundry", "ScreenFoundry", "Screen-printing prepress", "StitchFoundry/screenfoundry");
 
 pub(crate) struct Runtime {
     #[cfg(not(target_arch = "wasm32"))]
@@ -146,8 +146,8 @@ mod tests {
     #[cfg(not(target_arch = "wasm32"))]
     #[test]
     fn updates_are_looked_for_in_screenfoundrys_own_repository() {
-        assert_eq!(APP.repo, "Stitchwright/screenfoundry");
-        assert_eq!(APP.releases_url(), "https://github.com/Stitchwright/screenfoundry/releases");
+        assert_eq!(APP.repo, "StitchFoundry/screenfoundry");
+        assert_eq!(APP.releases_url(), "https://github.com/StitchFoundry/screenfoundry/releases");
         assert!(!APP.repo.contains("vectorcraft") && APP.stems().all(|s| s == "screenfoundry"));
     }
 

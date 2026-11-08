@@ -5,7 +5,7 @@
 ScreenFoundry separates artwork into spot-colour plates, builds the underbase, traps the colours,
 screens tones into halftone dots at the right angle for your mesh, and adds registration marks.
 It is written in pure Rust, MIT OR Apache-2.0, and built on the
-[StitchFoundry](https://github.com/Stitchwright/StitchFoundry) / VectorCraft vector editor so art,
+[StitchFoundry](https://github.com/StitchFoundry/StitchFoundry) / VectorCraft vector editor so art,
 separations and films live in one document, with PhotoCraft-style raster tools to follow.
 
 > [!NOTE]
@@ -51,7 +51,7 @@ The full app build is the inherited one; see [`docs/development.md`](docs/develo
 ## Support
 
 ScreenFoundry is free and open source. If it saves you time you can [buy me a coffee](https://buymeacoffee.com/bwattendorf) (optional), and
-videos are on the [MakerFoundry YouTube channel](https://www.youtube.com/@MakerFoundryApp). Bugs and ideas: [GitHub issues](https://github.com/Stitchwright/screenfoundry/issues).
+videos are on the [MakerFoundry YouTube channel](https://www.youtube.com/@MakerFoundryApp). Bugs and ideas: [GitHub issues](https://github.com/StitchFoundry/screenfoundry/issues).
 
 ## Licence
 
