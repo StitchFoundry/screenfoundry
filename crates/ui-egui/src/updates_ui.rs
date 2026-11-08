@@ -11,7 +11,8 @@ use craft_update::updater::{Action, Status, Updater};
 /// nowhere else. (The suite's VectorCraft entry would look in VectorCraft's, whose newer version
 /// numbers would offer VectorCraft's installers in place of ScreenFoundry.)
 #[cfg(not(target_arch = "wasm32"))]
-pub const APP: craft_update::App = craft_update::App::new("screenfoundry", "ScreenFoundry", "Screen-printing prepress", "StitchFoundry/screenfoundry");
+pub const APP: craft_update::App =
+    craft_update::App::new("screenfoundry", "ScreenFoundry", "Screen-printing prepress", "StitchFoundry/screenfoundry");
 
 pub(crate) struct Runtime {
     #[cfg(not(target_arch = "wasm32"))]
