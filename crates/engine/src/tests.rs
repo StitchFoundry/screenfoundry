@@ -56,6 +56,7 @@ mod focal;
 mod fontfiles;
 mod fontlist;
 mod freeform;
+mod garment;
 mod globaledit;
 mod gradient;
 mod gradpanel;

@@ -61,6 +61,7 @@ Known simplifications to fix:
 | SC-9 | Rename to `screenfoundry` | Done 2026-10-24 except the hub name above (the icon is new original artwork). Binaries `screenfoundry` and `screenfoundry-cli`; documents save as `.screenfoundry`; `.stitchfoundry`, `.vectorcraft` and `.drawcraft` still open; settings come from the old StitchFoundry and VectorCraft folders when there are none yet. |
 | SC-10 | Calibration: print-test pages and shop feedback loop to tune the default profiles | First part done 2026-10-23: `screen.testPage` makes the sheets. Tuning the defaults needs real prints from a shop. The only way to settle the research's open conflicts. |
 | SC-11 (done 2026-10-31 except the live and browser checks: `docs/makerfoundry.md`) | MakerFoundry: publish the drawing as an SVG draft and open an SVG from a link | `screen.makerFoundryExport`, File › Publish to MakerFoundry… and Foundry Account…, `sc-maker`, the web app's `?open=`, a content security policy for the web page. A screen-printing kind on MakerFoundry for films is a later request. |
+| SC-12 (done 2026-11-09, issue #56) | Getting Started: start a job from the garment (item, colour, print location) | `screen.garments`, `screen.newJob`, `screen.printAreaCheck`, `sc-core::garment`; Start a print job window (Home, File › New Print Job…); the garment colour sets the underbase default. Left: customer proof export (PNG/PDF of the mockup), a mockup per sleeve side, saved custom garment sizes. |
 
 ## 5. Decisions for the owner
 
@@ -73,6 +74,7 @@ Decided by the owner on 2026-10-21: remove the embroidery code (done, `docs/plan
 
 ## 7. Revision history
 
+- 2026-11-09: SC-12: Start a print job (garment, colour, print location) with the garment colour driving the underbase default (#56).
 - 2026-10-21: created; `sc-core` separation core landed.
 - 2026-10-21: SC-1 landed: four `screen.*` engine commands, PNG films (1-bit TIFF/PDF is SC-2).
 - 2026-10-21: Screen Print menu (right of Effect) with two folder-picking items; translations for 23 languages are a machine-written first pass and need native review.
