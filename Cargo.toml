@@ -151,6 +151,21 @@ debug = "line-tables-only"
 lto = "thin"
 codegen-units = 1
 
+# The browser build (apps/vectorcraft-web/Trunk.toml sets `cargo_profile = "web"`): size matters more
+# than speed there, because the .wasm is downloaded on every cold start (issue #61). `opt-level = "z"`
+# stops the inliner and loop unroller blowing up the code section, fat LTO drops what no entry point
+# reaches, and `panic = "abort"` is what wasm32-unknown-unknown does anyway (it has no unwinding).
+# `strip = true` would also drop the target_features section, and wasm-opt then rejects the bulk-memory
+# instructions in the module; "debuginfo" keeps it.
+[profile.web]
+inherits = "release"
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = "debuginfo"
+debug = false
+
 [patch.crates-io]
 hayro-syntax = { git = "https://github.com/storytold/craft-libs", rev = "92d392cff132eaf53e13afff77f38b5c11b73aa0" }
 hayro-interpret = { git = "https://github.com/storytold/craft-libs", rev = "92d392cff132eaf53e13afff77f38b5c11b73aa0" }
