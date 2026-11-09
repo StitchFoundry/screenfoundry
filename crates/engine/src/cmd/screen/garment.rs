@@ -17,6 +17,7 @@ use vectorcraft_doc::{Appearance, Document, LayerColor, Node, NodeKind};
 use vectorcraft_geom::{PathData, Point, Rect, SubPath};
 
 use super::{CommandSpec, Result, Session, always, bad, cmd, str_param};
+use crate::cmd::has_doc;
 
 /// The key the job is kept under in the document's plug-in data (see `vectorcraft_doc::plugin_data`).
 pub const JOB_KEY: &str = "screenfoundry.job";
@@ -52,7 +53,7 @@ pub fn specs() -> Vec<CommandSpec> {
             [],
             None,
             "{} whether the printing art of a garment job stays inside its print area → {job: bool, inside: bool, areaIn?: [w, h], artIn?: [w, h], message}; art outside is not printed on the films, so this warns",
-            always,
+            has_doc,
             print_area_check
         ),
     ]
