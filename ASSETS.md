@@ -321,6 +321,10 @@ Generated-in-code art is original and has no file to list. This covers the defau
 | `docs/images/shot-2-ribbons.png` | VectorCraft contributors | Screenshot of VectorCraft itself, editing `examples/ribbons.vectorcraft` | MIT OR Apache-2.0 |  |
 | `docs/images/shot-3-sheet.png` | VectorCraft contributors | Screenshot of VectorCraft itself, editing `examples/feature-sheet.vectorcraft` | MIT OR Apache-2.0 |  |
 | `docs/images/shot-4-bezier.png` | VectorCraft contributors | Screenshot of VectorCraft itself, editing `examples/feature-sheet.vectorcraft` | MIT OR Apache-2.0 |  |
+| `docs/images/start-a-print-job/start-1-home.png` | ScreenFoundry contributors | Headless screenshot of ScreenFoundry itself (Home screen) from `print_job_screenshots` | MIT OR Apache-2.0 |  |
+| `docs/images/start-a-print-job/start-2-dark-shirt-left-chest.png` | ScreenFoundry contributors | Headless screenshot of ScreenFoundry itself (Start a print job window) from `print_job_screenshots` | MIT OR Apache-2.0 |  |
+| `docs/images/start-a-print-job/start-3-light-hoodie-full-front.png` | ScreenFoundry contributors | Headless screenshot of ScreenFoundry itself (Start a print job window) from `print_job_screenshots` | MIT OR Apache-2.0 |  |
+| `docs/images/start-a-print-job/start-4-new-job-on-the-canvas.png` | ScreenFoundry contributors | Headless screenshot of ScreenFoundry itself (a new garment job with art) from `print_job_screenshots` | MIT OR Apache-2.0 |  |
 | `docs/images/shot-5-perspective.png` | VectorCraft contributors | Screenshot of VectorCraft itself, editing `examples/perspective-city.vectorcraft` | MIT OR Apache-2.0 |  |
 | `docs/images/shot-6-revolve.png` | VectorCraft contributors | Screenshot of VectorCraft itself, editing `examples/still-life.vectorcraft` | MIT OR Apache-2.0 |  |
 | `docs/images/shot-7-dimensions.png` | VectorCraft contributors | Screenshot of VectorCraft itself, editing `examples/bracket-drawing.vectorcraft` | MIT OR Apache-2.0 |  |

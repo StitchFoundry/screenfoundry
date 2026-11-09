@@ -28,7 +28,12 @@ fn home_content(app: &mut VectorcraftApp, ui: &mut Ui) {
     ui.label(egui::RichText::new(tl!("Welcome to ScreenFoundry")).font(theme::semibold(26.0)).color(t.text));
     ui.add_space(22.0);
     ui.horizontal(|ui| {
-        if widgets::primary_button(ui, tl!("New file")).clicked() {
+        // A screen printer starts with the garment, not a page: the print job is the main way in.
+        if widgets::primary_button(ui, tl!("Start a print job")).clicked() {
+            app.run("file.newPrintJob", json!({})).ok();
+        }
+        ui.add_space(8.0);
+        if widgets::secondary_button(ui, tl!("Blank canvas (page size)")).clicked() {
             app.run("file.newDialog", json!({})).ok();
         }
         ui.add_space(8.0);
@@ -38,7 +43,7 @@ fn home_content(app: &mut VectorcraftApp, ui: &mut Ui) {
     });
     recent(app, ui);
     ui.add_space(28.0);
-    ui.label(egui::RichText::new(tl!("Quickly start a new file")).font(theme::semibold(14.0)).color(t.text));
+    ui.label(egui::RichText::new(tl!("Or start from a blank page")).font(theme::semibold(14.0)).color(t.text));
     ui.add_space(10.0);
     // A few of New Document's presets (`file.newPresets`), as its cards.
     let presets = ["Letter", "A4", "Web 1920×1080", "Phone 390×844", "Postcard", "Social Square Post 1080×1080"];

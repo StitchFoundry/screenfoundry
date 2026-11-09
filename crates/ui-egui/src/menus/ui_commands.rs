@@ -130,6 +130,12 @@ pub const UI_COMMANDS: &[(&str, &str, &str, &str)] = &[
     ("file.documentSetup", "Document Setup…", "Cmd+Alt+P", "{}"),
     ("file.newDialog", "New…", "Cmd+N", "{} opens the New Document dialog"),
     (
+        "file.newPrintJob",
+        "New Print Job…",
+        "",
+        "{} opens Start a print job: the item, its colour and the print location (then screen.newJob, which takes the same choices as params)",
+    ),
+    (
         "file.newWithoutDialog",
         "New Without Dialog",
         "Cmd+Alt+N",

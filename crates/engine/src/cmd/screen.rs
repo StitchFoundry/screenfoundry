@@ -31,9 +31,16 @@ const MAX_FILE_BYTES: u64 = 256 << 20;
 const MAX_IMAGE_SIDE: u32 = 20_000;
 const MAX_INKS: usize = 12;
 
+mod garment;
 mod vector;
 
 pub fn specs() -> Vec<CommandSpec> {
+    let mut all = garment::specs();
+    all.extend(base_specs());
+    all
+}
+
+fn base_specs() -> Vec<CommandSpec> {
     vec![
         cmd!(
             query "screen.palette",
@@ -632,6 +639,7 @@ fn underbase_of(p: &Value, cmd: &str, mm_px: impl Fn(f64) -> f64) -> Result<Opti
 
 fn separate(s: &mut Session, p: &Value) -> Result<Value> {
     const C: &str = "screen.separate";
+    let p = &*garment::with_job_defaults(s, p);
     let dpi = num(p, C, "dpi", DEFAULT_DPI, 25.0..=2400.0)?;
     let trap_mm = num(p, C, "trapMm", 0.25, 0.0..=5.0)?;
     let marks = bool_or(p, "marks", false);
@@ -827,6 +835,7 @@ fn test_page_films(_: &mut Session, p: &Value) -> Result<Value> {
 
 /// `screen.index`: full-colour art as square pixels of a fixed palette of inks, none overlapping.
 fn index_colour(s: &mut Session, p: &Value) -> Result<Value> {
+    let p = &*garment::with_job_defaults(s, p);
     const C: &str = "screen.index";
     let dpi = num(p, C, "dpi", DEFAULT_DPI, 25.0..=2400.0)?;
     let marks = bool_or(p, "marks", false);
@@ -951,6 +960,7 @@ fn kernel_of(p: &Value, cmd: &str, key: &str) -> Result<Kernel> {
 
 /// `screen.simulate`: full-colour art as halftone dots of a few inks over a base.
 fn simulate(s: &mut Session, p: &Value) -> Result<Value> {
+    let p = &*garment::with_job_defaults(s, p);
     const C: &str = "screen.simulate";
     let dpi = num(p, C, "dpi", DEFAULT_DPI, 25.0..=2400.0)?;
     let lpi = num(p, C, "lpi", 45.0, 1.0..=500.0)?;

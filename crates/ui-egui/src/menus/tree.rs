@@ -27,6 +27,7 @@ pub fn menu_tree_named(english_names: bool) -> Vec<(&'static str, Vec<Item>)> {
         (
             "File",
             vec![
+                c("New Print Job…", "file.newPrintJob"),
                 c("New…", "file.newDialog"),
                 c("New from Template…", "file.newFromTemplate"),
                 c("Open…", "file.open"),

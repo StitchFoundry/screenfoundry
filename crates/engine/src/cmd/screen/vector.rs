@@ -726,6 +726,7 @@ fn plates_into_layers(s: &mut Session, plates: Vec<(String, [u8; 3], PathData)>)
 /// `screen.separateVector`: the open document's paths as one film per ink.
 pub(super) fn separate_vector(s: &mut Session, p: &Value) -> Result<Value> {
     const C: &str = "screen.separateVector";
+    let p = &*super::garment::with_job_defaults(s, p);
     if !matches!(p.get("source"), None | Some(Value::Null)) {
         return Err(bad(C, "this separates the open document's art: use screen.separate for an image file"));
     }
