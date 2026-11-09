@@ -71,7 +71,7 @@ fn hex(s: &str) -> Option<egui::Color32> {
         return None;
     }
     let v = u32::from_str_radix(s, 16).ok()?;
-    Some(egui::Color32::from_rgb((v >> 16) as u8, (v >> 8) as u8 & 0xff, v as u8))
+    Some(egui::Color32::from_rgb((v >> 16) as u8, (v >> 8) as u8, v as u8))
 }
 
 /// Triangles of a simple polygon by ear clipping (the garment outlines are concave at the neck).
@@ -127,9 +127,11 @@ fn draw_item(painter: &egui::Painter, rect: egui::Rect, item: &Value, fill: egui
         if pts.len() < 3 {
             continue;
         }
-        let mut mesh = egui::Mesh::default();
-        mesh.vertices = pts.iter().map(|&pos| egui::epaint::Vertex { pos, uv: egui::epaint::WHITE_UV, color: fill }).collect();
-        mesh.indices = triangulate(&pts).into_iter().flat_map(|t| t.map(|i| i as u32)).collect();
+        let mesh = egui::Mesh {
+            vertices: pts.iter().map(|&pos| egui::epaint::Vertex { pos, uv: egui::epaint::WHITE_UV, color: fill }).collect(),
+            indices: triangulate(&pts).into_iter().flat_map(|t| t.map(|i| i as u32)).collect(),
+            ..Default::default()
+        };
         painter.add(egui::Shape::mesh(mesh));
         painter.add(egui::Shape::closed_line(pts, egui::Stroke::new(1.25, line)));
     }
@@ -351,7 +353,7 @@ mod tests {
             h.render().unwrap().save(dir.join(name)).unwrap();
         };
         let dialog: fn(&mut VectorcraftApp, &mut egui::Ui) = |app, ui| show(app, &ui.ctx().clone());
-        shot("start-1-home.png", egui::vec2(980.0, 640.0), &|_| {}, |app, ui| crate::canvas::show(app, ui));
+        shot("start-1-home.png", egui::vec2(980.0, 640.0), &|_| {}, crate::canvas::show);
         shot(
             "start-2-dark-shirt-left-chest.png",
             egui::vec2(720.0, 560.0),
@@ -386,7 +388,7 @@ mod tests {
                 app.session.execute("paint.setFill", &json!({"color": "#fadc14"})).unwrap();
                 app.session.execute("view.zoomFit", &json!({})).ok();
             },
-            |app, ui| crate::canvas::show(app, ui),
+            crate::canvas::show,
         );
     }
 }
