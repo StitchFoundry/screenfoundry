@@ -14,3 +14,5 @@
 - 2026-11-07: issue #43 branding: customer-facing "SiteSentrix" -> "StitchFoundry" (About text + i18n catalogs, Windows/Linux packaging, exe CompanyName). Legal files (LICENSE, NOTICE, copyright strings, ASSETS.md) left for Bruce. Inflected translations (e.g. fi, hu) got a plain word swap; a native check is worthwhile.
 - 2026-11-07 nightly sweep: no needs-triage issues; history secret scan clean; cargo audit unchanged (#19); no new findings filed.
 - Fixed #41 here: `cargo xtask cleanroom` now exists and runs in `cargo xtask ci` (Adobe notices and creator stamps, owner-reviewed allowlist).
+- 2026-11-09 nightly sweep: no needs-triage issues; history secret scan clean; cargo audit unchanged (#19); reviewed screen.* file writers, sc-core size guards and MCP intake with no new findings; no eligible fix (only #19, a security item).
+- Main: `cargo xtask ci` fmt + clippy + all 11,115 tests pass; the later no-bundled-fonts step hit "no space left on device" (disk, not code).
