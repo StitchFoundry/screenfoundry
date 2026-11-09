@@ -24,6 +24,30 @@ channel, the command-line tool and the MCP server.
 - [Commands and automation](#commands-and-automation)
 - [Known limits](#known-limits)
 
+## Start a print job
+
+A print job starts with the garment: what you print on, its colour, and where the print goes.
+The page size only matters at the end, when the films are made.
+
+1. On the Home screen choose **Start a print job** (or File › New Print Job…).
+2. **What are you printing on?** T-shirt, hoodie / sweatshirt, tote bag, poster / paper, or other.
+3. **Garment colour.** Pick a swatch or type a colour such as `#223344`. A dark garment turns the
+   **Underbase** on in the Screen Print panel ("Dark shirt: a white underbase prints first so
+   colours stay bright."); a light one leaves it off. You can switch it either way.
+4. **Where does the print go?** Left chest, full front, full back, sleeve, oversized or custom size.
+   The **Print area** (inches) starts at a rule of thumb for that place (left chest about
+   4 × 4 in, full front about 12 × 14 in) and is yours to change.
+5. **Create.** The artboard *is* the print area, so the films come out the size of the print. The
+   garment is drawn in your colour on a locked, non-printing layer called *Garment mockup* behind
+   an *Art* layer; it is never separated.
+6. If the art reaches outside the print area, the Screen Print panel warns you (it never blocks):
+   what lies outside is left off the films.
+
+Choose **Blank canvas (page size)…** in the window, or File › New, for a plain page with the usual
+presets. Automation: `screen.garments` lists the choices and `screen.newJob` makes the document;
+the separation commands use the garment colour for their underbase default unless `underbase` is
+given. The sizes and the colour rule are in [`docs/research/garment-start.md`](research/garment-start.md).
+
 ## Quick start
 
 1. Draw the art, or open an SVG, PDF or image. Each ink should be a flat color.

@@ -79,6 +79,7 @@ pub mod placement_options;
 pub mod plugin;
 mod png_options;
 pub mod print;
+mod print_job;
 pub mod print_presets;
 mod psd_options;
 pub mod raster_effects;
@@ -136,6 +137,7 @@ pub(crate) use form::{humanize, number_list_text, read_number_list, unit_suffix}
 pub(crate) use new_document::preset_name;
 pub use new_document::{create_without_dialog as new_document_without_dialog, open as open_new_document, preset_card};
 pub use png_options::open as open_raster_options;
+pub use print_job::open as open_print_job;
 pub use save_pdf::{open as open_save_pdf, open_preset as open_pdf_preset};
 pub use tools::open_tool_dialog;
 
@@ -272,6 +274,7 @@ macro_rules! registry {
 registry! {
     DimensionOptions: [dimension::KIND] => dimension::SPEC,
     NewDocument: [new_document::KIND] => new_document::SPEC,
+    PrintJob: [print_job::KIND] => print_job::SPEC,
     Shape: ["rectangle", "roundedRectangle", "ellipse", "polygon", "star", "lineSegment", "arc", "spiral", "rectangularGrid", "polarGrid"] => shapes::SPEC,
     Transform: ["move", "rotate", "scale", "reflect", "shear"] => transform::SPEC,
     PathOp: ["average", "offsetPath", "simplify", "splitIntoGrid"] => path_ops::SPEC,
