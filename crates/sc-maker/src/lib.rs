@@ -34,10 +34,16 @@ impl Request {
     /// takes. A host sends only requests that pass, so a mistake elsewhere in the app can't make it
     /// send anything else, or a token anywhere else.
     pub fn expected(&self) -> Result<(), String> {
-        let signed = if self.url == format!("{}/api/v1/designs", Site::MAKERFOUNDRY) {
+        self.expected_in(staging())
+    }
+
+    /// [`Request::expected`] for production (`staging` false) or the staging services.
+    pub fn expected_in(&self, staging: bool) -> Result<(), String> {
+        let (maker, accounts) = if staging { (Site::STAGING_MAKERFOUNDRY, Site::STAGING_ACCOUNTS) } else { (Site::MAKERFOUNDRY, Site::ACCOUNTS) };
+        let signed = if self.url == format!("{maker}/api/v1/designs") {
             true
         } else {
-            let path = self.url.strip_prefix(Site::ACCOUNTS).unwrap_or_default();
+            let path = self.url.strip_prefix(accounts).unwrap_or_default();
             match path {
                 "/v1/signin" | "/v1/signup" => false,
                 "/v1/signout" | "/v1/account" => true,
@@ -78,6 +84,25 @@ pub struct Response {
     pub body: String,
 }
 
+/// Whether the staging services are in use (web app, `?services=staging`); production otherwise.
+static STAGING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Use the staging services (`true`) or production (`false`) from now on.
+pub fn use_staging(on: bool) {
+    STAGING.store(on, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// Whether the staging services are in use.
+pub fn staging() -> bool {
+    STAGING.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+/// Whether a tab asks for the staging services: `services=staging` in its address, or the same
+/// remembered for the tab's session. Exactly that word and nothing else; any other value is ignored.
+pub fn staging_requested(param: Option<&str>, remembered: Option<&str>) -> bool {
+    param == Some("staging") || remembered == Some("staging")
+}
+
 /// A service the app talks to: an `https` origin (no path), or `http` on this machine for
 /// development.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -91,14 +116,19 @@ impl Site {
     /// The Foundry Account service (Foundry sign-in is shared by the whole family).
     pub const ACCOUNTS: &'static str = "https://cloud.stitchfoundry.app";
 
-    /// MakerFoundry's site.
+    /// Staging MakerFoundry (test data), compiled in: never taken from an address.
+    pub const STAGING_MAKERFOUNDRY: &'static str = "https://makerfoundry-test-test.up.railway.app";
+    /// The staging Foundry Account service (test data), compiled in.
+    pub const STAGING_ACCOUNTS: &'static str = "https://cloud-staging-staging.up.railway.app";
+
+    /// MakerFoundry's site (staging's while [`staging`] is on).
     pub fn makerfoundry() -> Self {
-        Self { origin: Self::MAKERFOUNDRY.to_string() }
+        Self { origin: if staging() { Self::STAGING_MAKERFOUNDRY } else { Self::MAKERFOUNDRY }.to_string() }
     }
 
-    /// The Foundry Account service's site.
+    /// The Foundry Account service's site (staging's while [`staging`] is on).
     pub fn accounts() -> Self {
-        Self { origin: Self::ACCOUNTS.to_string() }
+        Self { origin: if staging() { Self::STAGING_ACCOUNTS } else { Self::ACCOUNTS }.to_string() }
     }
 
     /// The site at `origin`: `https://host`, or `http://127.0.0.1:port` / `http://localhost:port`
@@ -142,6 +172,33 @@ impl Site {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn staging_is_asked_for_by_one_exact_word() {
+        assert!(staging_requested(Some("staging"), None) && staging_requested(None, Some("staging")));
+        for bad in ["Staging", "staging ", "production", "https://evil.example", "staging.evil.example", ""] {
+            assert!(!staging_requested(Some(bad), None) && !staging_requested(None, Some(bad)), "{bad:?}");
+        }
+        assert!(!staging_requested(None, None), "production is the default");
+    }
+
+    #[test]
+    fn staging_addresses_are_exact_https_and_the_requests_follow_them() {
+        for a in [Site::STAGING_MAKERFOUNDRY, Site::STAGING_ACCOUNTS] {
+            assert_eq!(Site::parse(a).unwrap().origin(), a);
+            assert!(a.starts_with("https://"));
+        }
+        let signin = |origin: &str| Request {
+            method: "POST",
+            url: format!("{origin}/v1/signin"),
+            headers: vec![("Content-Type", "application/json".into())],
+            body: "{}".into(),
+        };
+        assert!(signin(Site::STAGING_ACCOUNTS).expected_in(true).is_ok());
+        assert!(signin(Site::STAGING_ACCOUNTS).expected_in(false).is_err(), "production mode never sends to staging");
+        assert!(signin(Site::ACCOUNTS).expected_in(false).is_ok() && signin(Site::ACCOUNTS).expected_in(true).is_err());
+        assert!(signin("https://cloud-staging-staging.up.railway.app.evil.example").expected_in(true).is_err());
+    }
 
     #[test]
     fn a_site_is_a_bare_origin() {
