@@ -9,9 +9,12 @@ use super::{CommandSpec, Result, Session, always, bad, cmd, str_param};
 /// This app's source repository.
 pub const GITHUB_URL: &str = "https://github.com/Stitchwright/screenfoundry";
 
-/// Where bug reports go: StitchHub's report page, which files them as issues on this app's GitHub repository.
-// `program=stitchfoundry` below is the name the hub knows this app by; it switches to `screenfoundry` once the hub has that program.
-pub const BUG_REPORT_URL: &str = "https://hub.stitchbench.app/report-a-bug";
+/// Where bug reports go: StitchHub's hosted form for this product (never a `mailto:` link).
+// `stitchfoundry` below is the name the hub knows this app by; it switches to `screenfoundry` once the hub has that product.
+pub const BUG_REPORT_URL: &str = "https://hub.stitchbench.app/report/stitchfoundry/bug";
+
+/// Where feature requests go: StitchHub's hosted form for this product (never a `mailto:` link).
+pub const FEATURE_REQUEST_URL: &str = "https://hub.stitchbench.app/report/stitchfoundry/feature";
 
 /// The page where people can buy the maker a coffee (a donation page: ScreenFoundry stays free).
 pub const SUPPORT_URL: &str = "https://buymeacoffee.com/bwattendorf";
@@ -35,9 +38,18 @@ pub fn specs() -> Vec<CommandSpec> {
             "Report a Bug…",
             ["Help"],
             None,
-            "{} → {url} StitchHub's bug report page, filled in with this app, its version and the system; a report becomes an issue on GitHub",
+            "{} → {url} StitchHub's bug report form for this app, with its version and the system filled in",
             always,
             |_, _| url(bug_report_url(env!("CARGO_PKG_VERSION"), std::env::consts::OS, std::env::consts::ARCH))
+        ),
+        cmd!(
+            query "help.requestFeature",
+            "Request a Feature…",
+            ["Help"],
+            None,
+            "{} → {url} StitchHub's feature request form for this app, with its version filled in",
+            always,
+            |_, _| url(feature_request_url(env!("CARGO_PKG_VERSION")))
         ),
         cmd!(query "help.links", "Links", [], None, "{} → {github, support, youtube}", always, |_, _| Ok(json!({ "github": GITHUB_URL, "support": SUPPORT_URL, "youtube": YOUTUBE_URL }))),
         cmd!(
@@ -145,7 +157,12 @@ fn for_tool(s: &mut Session, p: &Value) -> Result<Value> {
 
 /// The report page's address with the program, version and system in it (the page reads them; nothing else is sent).
 fn bug_report_url(version: &str, os: &str, arch: &str) -> String {
-    format!("{BUG_REPORT_URL}?program=stitchfoundry&version={}&system={}", percent_encode(version), percent_encode(&format!("{os} {arch}")))
+    format!("{BUG_REPORT_URL}?v={}&system={}", percent_encode(version), percent_encode(&format!("{os} {arch}")))
+}
+
+/// The feature request form's address with the app version in it.
+fn feature_request_url(version: &str) -> String {
+    format!("{FEATURE_REQUEST_URL}?v={}", percent_encode(version))
 }
 
 /// Percent-encodes everything but letters, digits and `-._~`.
@@ -188,15 +205,29 @@ mod tests {
     fn report_a_bug_opens_the_hub_page_with_the_version_and_system() {
         let mut s = Session::new();
         let u = s.execute("help.reportBug", &json!({})).unwrap()["url"].as_str().unwrap().to_string();
-        assert!(u.starts_with("https://hub.stitchbench.app/report-a-bug?program=stitchfoundry&version="), "{u}");
-        assert!(u.contains(&format!("version={}", env!("CARGO_PKG_VERSION"))), "{u}");
+        assert!(u.starts_with("https://hub.stitchbench.app/report/stitchfoundry/bug?v="), "{u}");
+        assert!(u.contains(&format!("v={}", env!("CARGO_PKG_VERSION"))), "{u}");
         assert!(u.contains("&system="), "{u}");
         assert_eq!(
             bug_report_url("0.3.1 beta", "mac os", "aarch64"),
-            "https://hub.stitchbench.app/report-a-bug?program=stitchfoundry&version=0.3.1%20beta&system=mac%20os%20aarch64"
+            "https://hub.stitchbench.app/report/stitchfoundry/bug?v=0.3.1%20beta&system=mac%20os%20aarch64"
         );
+        assert_eq!(feature_request_url("0.3.1 beta"), "https://hub.stitchbench.app/report/stitchfoundry/feature?v=0.3.1%20beta");
+        let f = s.execute("help.requestFeature", &json!({})).unwrap()["url"].as_str().unwrap().to_string();
+        assert!(f.starts_with("https://hub.stitchbench.app/report/stitchfoundry/feature?v="), "{f}");
         // Anything odd in the text can't add a parameter or leave the address.
         assert_eq!(percent_encode("a&b=c#d é"), "a%26b%3Dc%23d%20%C3%A9");
+    }
+
+    /// No bug or feature link anywhere in the shipped source or docs may be a `mailto:` link.
+    #[test]
+    fn no_feedback_link_is_a_mailto() {
+        assert!(!BUG_REPORT_URL.starts_with("mailto:") && !FEATURE_REQUEST_URL.starts_with("mailto:"));
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        for f in ["README.md", "docs/guide.md"] {
+            let text = std::fs::read_to_string(root.join(f)).unwrap_or_default();
+            assert!(!text.to_lowercase().contains("mailto:"), "{f} has a mailto: link");
+        }
     }
 
     #[test]
