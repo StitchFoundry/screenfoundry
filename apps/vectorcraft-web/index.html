@@ -14,6 +14,20 @@
        the only other sites the app talks to: MakerFoundry (Publish; Open in ScreenFoundry) and Foundry Account. -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' __SCRIPT_HASHES__ 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' data: blob: https://makerfoundry.app https://www.makerfoundry.app https://cloud.stitchfoundry.app; font-src 'self' data:; worker-src 'self' blob:; frame-src blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>ScreenFoundry</title>
+  <meta name="description" content="Screen-printing prepress: artwork in, one film per screen out. Free and open source.">
+  <link rel="canonical" href="https://app.screenfoundry.app/">
+  <!-- Favicon drawn here: a screen frame with a halftone dot and a squeegee line (original artwork, MIT OR Apache-2.0). -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23262626'/%3E%3Crect x='6' y='6' width='20' height='20' rx='2' fill='none' stroke='%23ffb042' stroke-width='2.5'/%3E%3Ccircle cx='13' cy='13' r='2.4' fill='%23f5f5f5'/%3E%3Ccircle cx='20' cy='13' r='1.4' fill='%23f5f5f5'/%3E%3Ccircle cx='13' cy='20' r='1.4' fill='%23f5f5f5'/%3E%3Ccircle cx='20' cy='20' r='2.4' fill='%23f5f5f5'/%3E%3C/svg%3E">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ScreenFoundry">
+  <meta property="og:title" content="ScreenFoundry">
+  <meta property="og:description" content="Screen-printing prepress: artwork in, one film per screen out. Free and open source.">
+  <meta property="og:url" content="https://app.screenfoundry.app/">
+  <meta property="og:image" content="https://app.screenfoundry.app/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link data-trunk rel="copy-file" href="og-image.png" />
   <link data-trunk rel="rust" data-bin="vectorcraft-web" data-wasm-opt="z" data-weak-refs />
   <style>
     /* iPad: no page scroll, bounce, pinch zoom, text selection or callout; the app takes the gestures. */
