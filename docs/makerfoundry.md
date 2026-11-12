@@ -28,7 +28,7 @@ account service's four, with exactly the headers each takes. Anything else is re
 redirects, have a time limit and a cap on how much of the answer is read.
 
 ## Open in ScreenFoundry (a link on a MakerFoundry page, web app only)
-MakerFoundry's **Open in ScreenFoundry** button links to `https://stitchwright.github.io/screenfoundry/?open=<the design file's address, URL-encoded>`. The web app reads it once at start and:
+MakerFoundry's **Open in ScreenFoundry** button links to `https://app.screenfoundry.app/?open=<the design file's address, URL-encoded>`. The web app reads it once at start and:
 1. checks the address strictly (`sc_maker::link::open_link`): `https`, host exactly `makerfoundry.app` or `www.makerfoundry.app` (no user name, port or trailing dot), a path under `/api/v1/` whose
    parts decode to plain names (no `.`, `..`, separator, control or hidden character, no second layer of `%XX`), a plain query, no fragment, no spaces, control characters, backslashes or non-ASCII,
    at most 2,048 characters;
@@ -58,7 +58,7 @@ lacks the three sites: a stale hash leaves the page blank (LaserFoundry's hosted
 ## Checked live and in a browser (2026-10-31)
 - **Live services, with the owner's OK.** A throwaway Foundry account (`/v1/signup`, 100 credits), a tiny SVG published with the request shape the app builds (`POST /api/v1/designs`): `201`, a draft of the
   laser kind, format SVG (design 3 on MakerFoundry, left there: apps cannot delete); sign-out `200`. Also `GET` of design 1's file: `404` with MakerFoundry's sentence "That design isn't on MakerFoundry.",
-  and CORS allowing `https://stitchwright.github.io` and exposing `Content-Disposition`; the account service answers the web app's preflight (`authorization`, `content-type`, `POST`).
+  and CORS allowing `https://app.screenfoundry.app` and exposing `Content-Disposition`; the account service answers the web app's preflight (`authorization`, `content-type`, `POST`).
   (The requests were sent with `curl` in the shape `sc-maker` builds; the desktop client's own HTTPS against the live services was not run.)
 - **The real web build in Chromium** (`trunk build`, served locally, MakerFoundry and the account service mocked at the network edge): 20 checks for Open in ScreenFoundry and 18 for Publish, all passing:
   the page boots under its policy with no policy errors (the hook filled one script hash); a good link opens as `tiger-shirt.svg`, with exactly one request, for the checked address; `?open=` leaves the
@@ -69,12 +69,12 @@ lacks the three sites: a stale hash leaves the page blank (LaserFoundry's hosted
   the check: `cd apps/vectorcraft-web && trunk build`, serve `dist/web`, load `/?open=<encoded address>` with MakerFoundry's address routed to a stand-in.
 
 ## Not checked
-- **The hosted page.** `https://stitchwright.github.io/screenfoundry/` returns 404 until the repository is public and Pages is on; the CI step `cargo xtask web-csp dist/web/index.html --check` then runs on the
+- **The hosted page.** `https://app.screenfoundry.app/` returns 404 until the repository is public and Pages is on; the CI step `cargo xtask web-csp dist/web/index.html --check` then runs on the
   real site build. The Chromium run used a local server.
 - A real MakerFoundry design opened from its page (the button is off until it is switched on, and MakerFoundry's side is not deployed yet), Windows and macOS, and a software-rendered WebGL (not WebGPU) browser.
 - The sign-in is not kept between runs (memory only), by design.
 
 ## For MakerFoundry's chat
-The web app's address is `https://stitchwright.github.io/screenfoundry/` and it opens **SVG only**. MakerFoundry's addresses (`/api/v1/designs/{id}/file/{slug}.svg`, optionally `?t=<48 hex>`) pass every check
+The web app's address is `https://app.screenfoundry.app/` and it opens **SVG only**. MakerFoundry's addresses (`/api/v1/designs/{id}/file/{slug}.svg`, optionally `?t=<48 hex>`) pass every check
 (`sc-maker` tests use the same shapes). The Publish dialog has a name field because the draft's title comes from the file name; the app string is `ScreenFoundry <version>`. Switch the button on once the
 repository is public and Pages serves the app.

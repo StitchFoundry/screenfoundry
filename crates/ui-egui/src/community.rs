@@ -42,14 +42,14 @@ mod tests {
         let services = crate::Services { open_url: Some(Box::new(move |u: &str| o.lock().unwrap().push(u.to_string()))), ..Default::default() };
         let mut app = VectorcraftApp::new(vectorcraft_engine::Session::new(), services);
         crate::menus::invoke(&mut app, "help.github", serde_json::json!({}));
-        assert_eq!(*opened.lock().unwrap(), ["https://github.com/Stitchwright/screenfoundry"]);
+        assert_eq!(*opened.lock().unwrap(), ["https://github.com/StitchFoundry/screenfoundry"]);
         crate::menus::invoke(&mut app, "help.support", serde_json::json!({}));
         crate::menus::invoke(&mut app, "help.youtube", serde_json::json!({}));
         assert_eq!(opened.lock().unwrap()[1..], ["https://buymeacoffee.com/bwattendorf", "https://www.youtube.com/@MakerFoundryApp"]);
         opened.lock().unwrap().truncate(1);
         // The control channel / MCP path returns the URL without opening a browser.
         let v = app.run("help.github", serde_json::json!({})).unwrap();
-        assert_eq!(v["url"], "https://github.com/Stitchwright/screenfoundry");
+        assert_eq!(v["url"], "https://github.com/StitchFoundry/screenfoundry");
         assert_eq!(opened.lock().unwrap().len(), 1);
         let ctx = egui::Context::default();
         theme::install_fonts(&ctx);
