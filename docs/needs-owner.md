@@ -29,7 +29,7 @@ business decision.
 
 ## 2b. MakerFoundry (SC-11): your OK and two switches
 - **Live check:** say OK and a throwaway Foundry account publishes a tiny SVG. It leaves a test draft on MakerFoundry (no delete endpoint for apps).
-- **The web app's address** (`https://stitchwright.github.io/screenfoundry/`) returns 404 until the repository is public and Pages is on (Settings › Pages › Source: GitHub Actions). Then tell the
+- **The web app's address** (`https://app.screenfoundry.app/`) returns 404 until the repository is public and Pages is on (Settings › Pages › Source: GitHub Actions). Then tell the
   MakerFoundry chat to switch the Open in ScreenFoundry button on.
 - **Browser check:** the page needs a Chromium run of the real build (Trunk). It was not done yet.
 

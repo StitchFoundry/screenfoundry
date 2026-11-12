@@ -74,7 +74,7 @@ SmartScreen warning (*More info › Run anyway*), and on macOS the first start i
 *Open* (or *System Settings › Privacy & Security › Open Anyway*). It drafts no release.
 
 **The web app online:** every push to `main` runs `.github/workflows/pages.yml`, which builds the
-web app and publishes it on GitHub Pages at <https://stitchwright.github.io/ScreenFoundry/>
+web app and publishes it on GitHub Pages at <https://app.screenfoundry.app/>
 (free for a public repository; also *Actions › Web app › Run workflow*). One-time setting by the
 repository owner: *Settings › Pages › Build and deployment › Source: GitHub Actions*.
 
@@ -229,7 +229,7 @@ against riscv64 libraries from ports.ubuntu.com (so the floor there is glibc 2.3
 `EMULATOR=qemu-riscv64` set: a `.tar.gz` only, with `screenfoundry-cli --version` run under QEMU.
 
 **AppImage updates.** Each AppImage embeds the update information
-`gh-releases-zsync|Stitchwright|ScreenFoundry|latest|screenfoundry-*-linux-<arch>.AppImage.zsync`
+`gh-releases-zsync|StitchFoundry|ScreenFoundry|latest|screenfoundry-*-linux-<arch>.AppImage.zsync`
 (appimagetool `-u`), and `package.sh` writes the matching `.zsync` beside it when `zsyncmake` (the
 `zsync` package) is installed. [AppImageUpdate](https://github.com/AppImageCommunity/AppImageUpdate)
 and AppImageLauncher then download only the changed blocks from the newest published,
@@ -272,7 +272,7 @@ The jobs that sign (macOS, Windows) and the draft-release job run in the **`rele
 signing secrets. The other jobs get no secrets. A missing secret produces unsigned artifacts and a
 warning, never a failed build.
 
-`release` is the standard environment for **every SiteSentrix and Stitchwright repository that
+`release` is the standard environment for **every SiteSentrix and StitchFoundry repository that
 signs** (ScreenFoundry, LaserFoundry, PatternFoundry, …): the same name, limited to the `release`
 branch, with these same 12 secrets, so one signing setup serves them all. Set up 2026-10-20:
 
@@ -317,7 +317,7 @@ app-specific password, set the secret again (no spaces or line breaks), and re-r
 
 | Date | Change | Summary |
 |---|---|---|
-| 2026-10-20 | minor | The `release` environment is the standard for every signing SiteSentrix/Stitchwright repo; its 12 secrets; how to test signing (the Release run's Signature check and Gatekeeper check); macOS releases on the standard `macos-15` runner |
+| 2026-10-20 | minor | The `release` environment is the standard for every signing SiteSentrix/StitchFoundry repo; its 12 secrets; how to test signing (the Release run's Signature check and Gatekeeper check); macOS releases on the standard `macos-15` runner |
 | 2026-10-14 | minor | RPM glibc floor names libm's `GLIBC_2.35`: RHEL 9's glibc 2.34 provides libc's through backports |
 | 2026-10-12 | minor | RPM dependencies use 64-bit runtime capabilities and enforce glibc 2.35 (#1275); real distro install/start-up checks remain pending |
 | 2026-10-12 | minor | Portable mode (#1366): the Windows portable zip ships `portable.txt`; where the marker goes on macOS and Linux, and what Flatpak can't do |
