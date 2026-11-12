@@ -139,6 +139,8 @@ pub struct ScreenPrintState {
     /// Add a white screen for the highlights, printed last, for simulated process.
     pub highlight_white: bool,
     pub marks: bool,
+    /// The garment job the underbase was last set from (so choosing a job document sets it once).
+    pub job_key: Option<String>,
     pub films: Vec<PreviewFilm>,
     /// Mesh and angle advice of the last preview, one line each.
     pub advice: Vec<String>,
@@ -166,6 +168,7 @@ impl Default for ScreenPrintState {
             ink_limit_pct: 100.0,
             highlight_white: false,
             marks: true,
+            job_key: None,
             films: Vec::new(),
             advice: Vec::new(),
             message: None,
@@ -342,6 +345,37 @@ fn save(app: &mut VectorcraftApp, st: &mut ScreenPrintState) {
     }
 }
 
+/// A document that started from a garment (`screen.newJob`): its colour sets the underbase when
+/// the document is chosen, the reason is said in one line, and art outside the print area is
+/// warned about (never blocked).
+fn garment_job(app: &mut VectorcraftApp, ui: &mut Ui, st: &mut ScreenPrintState) {
+    let t = Tokens::get(ui.ctx());
+    let Some(job) = app.session.active().and_then(|s| s.doc.plugin_data("screenfoundry.job").cloned()) else {
+        st.job_key = None;
+        return;
+    };
+    let title = app.session.active().map(|s| s.doc.title.clone()).unwrap_or_default();
+    let key = format!("{title}|{job}");
+    if st.job_key.as_deref() != Some(key.as_str()) {
+        st.underbase = job["underbase"].as_bool().unwrap_or(false);
+        st.job_key = Some(key);
+    }
+    let area = job["areaIn"].as_array().map(|a| format!("{} × {} in", a[0], a[1])).unwrap_or_default();
+    ui.label(RichText::new(format!("{}: {area}", tl!("Print area"))).color(t.text_dim));
+    if job["underbase"].as_bool() == Some(true) {
+        ui.label(RichText::new(tl!("Dark shirt: a white underbase prints first so colours stay bright.")).color(t.text));
+    } else if job["garment"] == "tshirt" || job["garment"] == "hoodie" {
+        ui.label(RichText::new(tl!("Light shirt: no underbase needed, the colours print straight onto the fabric.")).color(t.text));
+    }
+    // A query: it never changes the document.
+    if let Ok(check) = app.session.execute("screen.printAreaCheck", &json!({}))
+        && check["inside"] == false
+    {
+        ui.colored_label(t.warning, check["message"].as_str().unwrap_or_default());
+    }
+    widgets::divider(ui);
+}
+
 pub fn show(app: &mut VectorcraftApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     let ctx = ui.ctx().clone();
@@ -350,6 +384,7 @@ pub fn show(app: &mut VectorcraftApp, ui: &mut Ui) {
     // Take the state out so the buttons below can run commands on `app` while it is edited.
     let mut st = std::mem::take(&mut app.ui.screen_print);
     let (mut find, mut snap, mut prev, mut save_clicked) = (false, false, false, false);
+    garment_job(app, ui, &mut st);
 
     ui.horizontal(|ui| {
         ui.label(RichText::new(tl!("Method")).color(t.text_dim));

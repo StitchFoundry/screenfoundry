@@ -7,6 +7,7 @@
 //! * [`separate`] – palette extraction, spot-colour separation, tone plates.
 //! * [`simulated`] – simulated-process separation: full colour from a few inks as halftone dots.
 //! * [`morph`] – exact Euclidean choke and spread of a plate (for underbase and traps).
+//! * [`garment`] – start a job from the item, its colour and the print location.
 //! * [`fm`] – stochastic (FM) screening by error diffusion on cells.
 //! * [`curve`] – a measured dot-gain curve and its inverse, for compensating the film.
 //! * [`halftone`] – amplitude-modulated screening (round, elliptical, line) at a screen angle.
@@ -32,6 +33,7 @@ pub mod dtf;
 pub mod error;
 pub mod export;
 pub mod fm;
+pub mod garment;
 pub mod halftone;
 pub mod image;
 pub mod index;

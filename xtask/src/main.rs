@@ -18,6 +18,7 @@ mod stats;
 mod version;
 mod web_csp;
 mod web_fonts;
+mod web_loading;
 
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitCode};
@@ -50,6 +51,8 @@ commands:
   web-csp [index.html] [--check]
                   fill the web page's content security policy with its inline scripts' hashes and check
                   it (the Trunk post_build hook; --check only checks)
+  web-loading [index.html]
+                  write the .wasm's size into the loading screen's progress bar (the Trunk post_build hook)
   web-fonts       copy the craft-fonts faces in crates/text/web-fonts.txt into the web site (the Trunk
                   post_build hook; a no-op without CRAFT_FONTS_DIR)
 ";
@@ -76,6 +79,7 @@ fn main() -> ExitCode {
         Some("version") => version::run(&root(), &rest),
         Some("stats") => stats::run(&root(), rest.contains(&"--exact")),
         Some("web-csp") => web_csp::run(&root(), &rest),
+        Some("web-loading") => web_loading::run(&root(), &rest),
         Some("web-fonts") => web_fonts::run(&root()),
         Some("-h" | "--help" | "help") | None => {
             print!("{USAGE}");

@@ -13,6 +13,24 @@ separations and films live in one document, with PhotoCraft-style raster tools t
 > is the VectorCraft vector editor with a Screen Print menu; the Separations panel and film export
 > formats are the next milestones. Nothing has been exposed on a real screen yet: test-expose before production runs.
 
+## Getting started
+
+You start with what you are printing on, not a page size.
+
+1. **Start a print job** (Home screen, or File › New Print Job…).
+2. Pick the item: T-shirt, hoodie, tote bag, poster or something else.
+3. Pick the garment colour. A dark garment turns the white underbase on, a light one leaves it
+   off, and one plain line says why.
+4. Pick where the print goes: left chest, full front, full back, sleeve, oversized or your own
+   size. Each sets the print area (starting sizes are rules of thumb you can change).
+5. **Create.** The document opens with the print area on a plain garment drawing in your colour.
+   Place your art; a warning appears in the Screen Print panel if it reaches outside the area.
+6. Choose the film sheet size only at the end, when you make the films (registration marks as
+   before).
+
+**Blank canvas (page size)** and File › New with its presets are still there.
+More: [`docs/guide.md`](docs/guide.md#start-a-print-job).
+
 ## What works today (`sc-core`)
 
 | Stage | What it does |

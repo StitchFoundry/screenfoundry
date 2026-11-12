@@ -97,6 +97,10 @@ fn run_ui_part1(app: &mut VectorcraftApp, id: &str, p: &Value) -> Option<Result<
             crate::dialogs::open_new_document(app);
             Ok(Value::Null)
         }
+        "file.newPrintJob" => {
+            crate::dialogs::open_print_job(app);
+            Ok(Value::Null)
+        }
         "file.newWithoutDialog" => crate::dialogs::new_document_without_dialog(app),
         "app.home" => {
             app.ui.home = Some(home_key(app));
