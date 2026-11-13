@@ -86,3 +86,12 @@ When a task lands, update in the same PR: the area row in `docs/target-app-parit
   GitHub profiles). Never hand-edit `contributors.json`.
 - Maintainers refresh the stats with `python3 ../../craftrules/scripts/contributors.py .` (it also
   re-verifies who wrote each `people.toml` entry; `--check` only verifies).
+
+## PR size rules (hard limits)
+- One issue = one small PR. Target under 300 changed lines and under 10 files (lockfiles, generated files and tests excluded from the count).
+- Before coding, estimate the size. If it will be bigger, STOP and split: comment on the issue with a numbered list of slices, each independently mergeable and green on main, then open the slices as new `claude-proposed` issues ("Part 1 of N: ..."). Work only slice 1 in this run.
+- Never leave main broken between slices: gate unfinished work behind a flag or keep it unreferenced.
+- Save and commit after every file; open a DRAFT PR early so a step-limit cut-off keeps the work. Resume the same branch instead of restarting.
+- Before opening or updating a PR: `git fetch` and rebase/merge main so the branch is current; run the repo's CI command locally first (`cargo xtask ci`).
+- Do not run the full heavy test suite more than once per run; run only the affected package's tests while iterating.
+- If you hit your step limit, write a handoff comment (done, left, next command) on the PR.
