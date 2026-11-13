@@ -15,3 +15,4 @@
 - 2026-11-07 nightly sweep: no needs-triage issues; history secret scan clean; cargo audit unchanged (#19); no new findings filed.
 - Fixed #41 here: `cargo xtask cleanroom` now exists and runs in `cargo xtask ci` (Adobe notices and creator stamps, owner-reviewed allowlist).
 - 2026-11-08: issue #47 org move: owner `Stitchwright` -> `StitchFoundry` in the update check, help URL, packaging (nfpm, AppImage update info, wxs, sign.ps1), Cargo.toml, README and docs; web app docs now point at `https://app.screenfoundry.app/`. App ids (`com.stitchwright.*`) unchanged. Bruce-only items in the issue (secrets, domain) untouched.
+- 2026-11-13: issue #75: PR size cap rules added to CLAUDE.md, AGENTS.md and the claude-fix workflow prompt. Docs/prompt only.
