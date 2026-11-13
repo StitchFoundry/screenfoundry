@@ -7,7 +7,7 @@ use serde_json::{Value, json};
 use super::{CommandSpec, Result, Session, always, bad, cmd, str_param};
 
 /// This app's source repository.
-pub const GITHUB_URL: &str = "https://github.com/Stitchwright/screenfoundry";
+pub const GITHUB_URL: &str = "https://github.com/StitchFoundry/screenfoundry";
 
 /// Where bug reports go: StitchHub's hosted form for this product (never a `mailto:` link).
 // `stitchfoundry` below is the name the hub knows this app by; it switches to `screenfoundry` once the hub has that product.

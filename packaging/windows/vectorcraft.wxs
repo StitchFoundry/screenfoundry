@@ -33,9 +33,9 @@
 
     <Icon Id="VectorcraftIcon.ico" SourceFile="$(var.IconPath)" />
     <Property Id="ARPPRODUCTICON" Value="VectorcraftIcon.ico" />
-    <Property Id="ARPURLINFOABOUT" Value="https://github.com/Stitchwright/screenfoundry" />
-    <Property Id="ARPURLUPDATEINFO" Value="https://github.com/Stitchwright/screenfoundry/releases" />
-    <Property Id="ARPHELPLINK" Value="https://github.com/Stitchwright/screenfoundry/issues" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/StitchFoundry/screenfoundry" />
+    <Property Id="ARPURLUPDATEINFO" Value="https://github.com/StitchFoundry/screenfoundry/releases" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/StitchFoundry/screenfoundry/issues" />
 
     <StandardDirectory Id="ProgramFiles6432Folder">
       <Directory Id="INSTALLFOLDER" Name="ScreenFoundry" />
