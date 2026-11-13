@@ -100,6 +100,7 @@ struct Moving {
 /// Run the app on `canvas`: the `moving` one when starting again after losing the graphics, else
 /// a new one.
 async fn run(host: Host, canvas: web_sys::HtmlCanvasElement, moving: Option<Moving>) {
+    apply_services();
     track_drag(&canvas, &host.drag);
     let kept = moving.as_ref().map(|m| m.kept);
     // The app until the new runner takes it (still here if starting fails before).
@@ -199,6 +200,36 @@ fn detect_language() {
     i18n::set_system_locales(tags.as_slice());
     if let Some(el) = element(LOADING_ID) {
         el.set_text_content(Some(i18n::message(i18n::system_lang(), "Loading ScreenFoundry…").as_str()));
+    }
+}
+
+/// The staging switch: `?services=staging` (or the same remembered for this tab's session) makes
+/// the app use the staging account service and MakerFoundry, compiled in (`sc_maker::Site`), and
+/// shows a banner. Any other value changes nothing; production is the default. Called before the
+/// app starts, so `?open=` is checked with it in place.
+fn apply_services() {
+    let Some(window) = web_sys::window() else { return };
+    let param = web_sys::UrlSearchParams::new_with_str(&query()).ok().and_then(|p| p.get("services"));
+    let session = window.session_storage().ok().flatten();
+    let remembered = session.as_ref().and_then(|s| s.get_item("services").ok().flatten());
+    if !sc_maker::staging_requested(param.as_deref(), remembered.as_deref()) {
+        return;
+    }
+    sc_maker::use_staging(true);
+    if let Some(s) = &session {
+        // best effort: without it the switch lasts until the next load
+        s.set_item("services", "staging").ok();
+    }
+    let Some(document) = window.document() else { return };
+    if document.get_element_by_id("staging-banner").is_some() {
+        return;
+    }
+    if let (Ok(el), Some(body)) = (document.create_element("div"), document.body()) {
+        el.set_id("staging-banner");
+        el.set_attribute("role", "status").ok();
+        el.set_attribute("style", "position:fixed;top:0;left:0;right:0;z-index:10;background:#b00020;color:#fff;font:600 12px sans-serif;text-align:center;padding:2px;pointer-events:none").ok();
+        el.set_text_content(Some("STAGING services (test data)"));
+        body.append_child(&el).ok();
     }
 }
 

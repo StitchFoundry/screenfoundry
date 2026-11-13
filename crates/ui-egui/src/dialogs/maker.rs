@@ -75,7 +75,7 @@ fn publish_body(app: &mut VectorcraftApp, ui: &mut egui::Ui, d: &mut Dialog) -> 
     if let Some(bytes) = app.maker.waiting() {
         // What goes where: the file as it will be named, its size, the site.
         ui.label(egui::RichText::new(format!("{}  ({} KB)", sc_maker::publish::svg_file_name(&d.str("name")), bytes.div_ceil(1024))).strong());
-        ui.label(egui::RichText::new(sc_maker::Site::MAKERFOUNDRY.trim_start_matches("https://")).color(t.text_dim));
+        ui.label(egui::RichText::new(sc_maker::Site::makerfoundry().origin().trim_start_matches("https://")).color(t.text_dim));
     }
     if let Some(email) = app.maker.email() {
         ui.label(crate::i18n::fmt(tl!("Signed in as {email}"), &[("email", email)]));

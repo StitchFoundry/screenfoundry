@@ -19,7 +19,13 @@ use crate::sha256;
 /// Where the hashes go in the policy of the source page.
 const PLACEHOLDER: &str = "__SCRIPT_HASHES__";
 /// What `connect-src` has to name, for Publish to MakerFoundry, Open in ScreenFoundry and sign-in.
-const CONNECT: [&str; 3] = ["https://makerfoundry.app", "https://www.makerfoundry.app", "https://cloud.stitchfoundry.app"];
+const CONNECT: [&str; 5] = [
+    "https://makerfoundry.app",
+    "https://www.makerfoundry.app",
+    "https://cloud.stitchfoundry.app",
+    "https://cloud-staging-staging.up.railway.app",
+    "https://makerfoundry-test-test.up.railway.app",
+];
 
 /// The command: the page is the first argument, else Trunk's staging folder's, else `dist/web`.
 pub fn run(root: &Path, args: &[&str]) -> Result<(), String> {

@@ -15,6 +15,8 @@ pub const TIMEOUT_SECONDS: u32 = 30;
 const MAX_NAME: usize = 120;
 /// The only sites a design opens from, and the only place on them.
 const HOSTS: [&str; 2] = ["makerfoundry.app", "www.makerfoundry.app"];
+/// The staging MakerFoundry, accepted only in staging mode.
+const STAGING_HOST: &str = "makerfoundry-test-test.up.railway.app";
 const PATH_START: &str = "/api/v1/";
 
 /// A design address that passed [`open_link`].
@@ -43,6 +45,11 @@ impl Checked {
 /// characters, no fragment; no spaces, control characters, backslashes or non-ASCII; at most
 /// [`MAX_ADDRESS`] characters. Else a sentence saying why not.
 pub fn open_link(raw: &str) -> Result<Checked, &'static str> {
+    open_link_in(raw, crate::staging())
+}
+
+/// [`open_link`] where the staging MakerFoundry's host is also accepted when `staging` is true.
+pub fn open_link_in(raw: &str, staging: bool) -> Result<Checked, &'static str> {
     const INVALID: &str = "the link to the design isn't a valid address";
     if raw.len() > MAX_ADDRESS || !raw.bytes().all(|b| b.is_ascii_graphic()) || raw.contains('\\') {
         return Err(INVALID);
@@ -58,7 +65,7 @@ pub fn open_link(raw: &str) -> Result<Checked, &'static str> {
     let end = rest.find(['/', '?']).unwrap_or(rest.len());
     let (authority, tail) = rest.split_at(end);
     let host = authority.to_ascii_lowercase();
-    if !HOSTS.contains(&host.as_str()) {
+    if !HOSTS.contains(&host.as_str()) && !(staging && host == STAGING_HOST) {
         return Err("designs open only from MakerFoundry");
     }
     let (path, query) = match tail.split_once('?') {
@@ -211,6 +218,25 @@ mod tests {
         assert_eq!(open_link("https://makerfoundry.app/api/v1/designs/7/file/Big%20Rose%20%281%29.svg").unwrap().file_name(), "Big Rose (1).svg");
         // a buyer's link
         assert!(open_link("https://makerfoundry.app/api/v1/designs/42/file/rose.svg?t=aB3-_x.y~z%2B").is_ok());
+    }
+
+    #[test]
+    fn the_staging_host_opens_only_in_staging_mode() {
+        let staged = "https://makerfoundry-test-test.up.railway.app/api/v1/designs/42/file/rose.svg";
+        assert_eq!(open_link_in(staged, true).unwrap().as_str(), staged);
+        assert!(open_link_in(staged, false).is_err(), "production refuses it");
+        assert!(open_link_in(GOOD, true).is_ok() && open_link_in(GOOD, false).is_ok());
+        for bad in [
+            "http://makerfoundry-test-test.up.railway.app/api/v1/designs/1/file/a.svg",
+            "https://makerfoundry-test-test.up.railway.app.evil.com/api/v1/designs/1/file/a.svg",
+            "https://evil-makerfoundry-test-test.up.railway.app/api/v1/designs/1/file/a.svg",
+            "https://up.railway.app/api/v1/designs/1/file/a.svg",
+            "https://other-test.up.railway.app/api/v1/designs/1/file/a.svg",
+            "https://makerfoundry-test-test.up.railway.app:8443/api/v1/designs/1/file/a.svg",
+            "https://makerfoundry-test-test.up.railway.app@evil.com/api/v1/designs/1/file/a.svg",
+        ] {
+            assert!(open_link_in(bad, true).is_err(), "{bad:?}");
+        }
     }
 
     #[test]
