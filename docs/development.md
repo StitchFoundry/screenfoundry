@@ -9,7 +9,7 @@
 
 ## Web build
 
-`apps/vectorcraft-web` runs the same `VectorcraftApp` in the browser through eframe's web runner. The renderer is wgpu: WebGPU where the browser has it, WebGL2 otherwise. It is Rust only; the only JavaScript is the glue wasm-bindgen generates.
+`apps/vectorcraft-web` runs the same `VectorcraftApp` in the browser through eframe's web runner. The renderer is wgpu: WebGPU where the browser has it, WebGL2 otherwise. It is Rust only apart from the JavaScript wasm-bindgen generates and two small hand-written files that can't be Rust because they run before the wasm exists: `apps/vectorcraft-web/loader.js` (loading-screen progress bar, caches the downloaded wasm) and `sw.js` (service worker, cache-first for the content-hashed files).
 
 ```sh
 brew install trunk                 # or: cargo install trunk --locked
@@ -26,7 +26,9 @@ craft-fonts checkout adds the fonts the site serves beside the wasm: Trunk's `po
 `CRAFT_FONTS_DIR`, and skips with a warning any listed face an older checkout lacks). See
 [Arabic fonts and the web build](#arabic-fonts-and-the-web-build).
 
-Any static file server works for `dist/web`, for example `python3 -m http.server 8766` inside that directory. The release `.wasm` is about 17.5 MB, or 7.1 MB gzipped, so serve it with compression.
+Any static file server works for `dist/web`, for example `python3 -m http.server 8766` inside that directory. The release `.wasm` is about 46 MB, or 17.8 MB gzipped (June 2026 figures were 17.5 / 7.1 MB; it grew with the app and, until #61, `opt-level = 3`), so serve it with compression.
+
+**Size and loading (#61).** `trunk build --release` builds with the `[profile.web]` Cargo profile (`Trunk.toml` `cargo_profile`): `opt-level = "z"`, fat LTO, `panic = "abort"`, then `wasm-opt -Oz`. It was 80 MB (27.9 MB gzipped) before. The loading screen shows MB downloaded (`loader.js`; `cargo xtask web-loading` writes the wasm's size into the page), `WebAssembly.instantiateStreaming` compiles while it downloads, and the wasm is kept in Cache Storage under its hashed name, so a second visit starts without downloading it again (`sw.js` serves the browser's preload from it). To see where the bytes go: `twiggy top -n 30 target/wasm32-unknown-unknown/web/vectorcraft-web.wasm` (build with `strip = false` for names).
 
 URL flag: `?webgl` forces the WebGL2 backend.
 

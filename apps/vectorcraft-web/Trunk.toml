@@ -4,6 +4,8 @@ target = "index.html"
 dist = "../../dist/web"
 public_url = "./"
 filehash = true
+# Size-optimised profile (Cargo.toml [profile.web]); `trunk build --release` still works unchanged.
+cargo_profile = "web"
 
 [serve]
 addresses = ["127.0.0.1"]
@@ -23,3 +25,10 @@ command_arguments = ["xtask", "web-fonts"]
 stage = "post_build"
 command = "cargo"
 command_arguments = ["xtask", "web-csp"]
+
+# Writes the .wasm's decompressed size into the loading screen, so its progress bar can show
+# "x of y MB" (xtask/src/web_loading.rs). Runs after web-csp, which only hashes inline scripts.
+[[hooks]]
+stage = "post_build"
+command = "cargo"
+command_arguments = ["xtask", "web-loading"]

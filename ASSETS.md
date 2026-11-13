@@ -12,6 +12,7 @@ Generated-in-code art is original and has no file to list. This covers the defau
 
 | Asset | Author | Source | Licence | Notes |
 |---|---|---|---|---|
+| `apps/vectorcraft-web/og-image.png` | SiteSentrix | Original artwork made for ScreenFoundry: the app icon (`assets/app-icon/`) with the product name and tagline on a dark tile, rendered at 1200x630 | MIT OR Apache-2.0 | Social-share (Open Graph) preview image for the web app |
 | `assets/app-icon/LICENSE.txt` | (licence/readme text) | ScreenFoundry | MIT OR Apache-2.0 |  |
 | `assets/app-icon/README.md` | (licence/readme text) | ScreenFoundry | MIT OR Apache-2.0 |  |
 | `assets/app-icon/hicolor/128x128/apps/com.stitchwright.screenfoundry.png` | SiteSentrix | Original artwork made for ScreenFoundry as SVG (`assets/app-icon/screenfoundry.svg`); PNG, ICO and ICNS rendered by `packaging/icons.sh` | MIT OR Apache-2.0 (`assets/app-icon/LICENSE.txt`) | App icon: a screen-printing screen with a halftone print and a squeegee |
