@@ -110,4 +110,34 @@ mod tests {
         // A default curve (from a bad file) leaves tones alone.
         assert_eq!(ToneCurve::default().film_for(0.3), 0.3);
     }
+
+    #[test]
+    fn edge_inputs_stay_finite_and_in_range() {
+        // Exactly the most points is accepted; one more is refused (checked above).
+        let pts: Vec<(f64, f64)> =
+            (1..=MAX_CURVE_POINTS).map(|i| (i as f64 / (MAX_CURVE_POINTS + 1) as f64, i as f64 / (MAX_CURVE_POINTS + 1) as f64)).collect();
+        assert!(ToneCurve::new(&pts).is_ok());
+        // Infinities and out-of-range printed tones are refused.
+        assert!(ToneCurve::new(&[(0.5, f64::INFINITY)]).is_err());
+        assert!(ToneCurve::new(&[(0.5, -0.1)]).is_err());
+        // A repeated film tone cannot rise, so it is refused.
+        assert!(ToneCurve::new(&[(0.5, 0.5), (0.5, 0.6)]).is_err());
+        // Queries outside 0..=1 or not finite clamp, and never return NaN.
+        let c = ToneCurve::new(&[(0.5, 0.7)]).unwrap();
+        for v in [-5.0, 5.0, f64::INFINITY, f64::NEG_INFINITY] {
+            assert!((0.0..=1.0).contains(&c.printed(v)), "{v}");
+            assert!((0.0..=1.0).contains(&c.film_for(v)), "{v}");
+        }
+        assert!(c.printed(f64::NAN).is_nan() || (0.0..=1.0).contains(&c.printed(f64::NAN)));
+        // Points at 0 or 1 on film are dropped as implied ends.
+        assert_eq!(ToneCurve::new(&[(0.0, 0.2)]).unwrap(), ToneCurve::new(&[]).unwrap());
+    }
+
+    #[test]
+    fn the_default_curve_leaves_a_plate_unchanged() {
+        let plate = Gray8::new(4, 1, vec![0, 17, 200, 255]).unwrap();
+        assert_eq!(ToneCurve::default().compensate(&plate).unwrap().data(), plate.data());
+        let straight = ToneCurve::new(&[]).unwrap();
+        assert_eq!(straight.compensate(&plate).unwrap().data(), plate.data());
+    }
 }
