@@ -53,6 +53,8 @@ commands:
                   it (the Trunk post_build hook; --check only checks)
   web-loading [index.html]
                   write the .wasm's size into the loading screen's progress bar (the Trunk post_build hook)
+  web-post        run web-fonts, web-csp and web-loading one after the other (the one Trunk post_build hook:
+                  Trunk runs separate hooks at the same time and they overwrite each other's edits to index.html)
   web-fonts       copy the craft-fonts faces in crates/text/web-fonts.txt into the web site (the Trunk
                   post_build hook; a no-op without CRAFT_FONTS_DIR)
 ";
@@ -81,6 +83,7 @@ fn main() -> ExitCode {
         Some("web-csp") => web_csp::run(&root(), &rest),
         Some("web-loading") => web_loading::run(&root(), &rest),
         Some("web-fonts") => web_fonts::run(&root()),
+        Some("web-post") => web_fonts::run(&root()).and_then(|()| web_csp::run(&root(), &[])).and_then(|()| web_loading::run(&root(), &[])),
         Some("-h" | "--help" | "help") | None => {
             print!("{USAGE}");
             Ok(())

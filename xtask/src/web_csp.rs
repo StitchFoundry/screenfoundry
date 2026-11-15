@@ -231,4 +231,14 @@ mod tests {
     fn filling_needs_the_placeholder() {
         assert!(fill("<html></html>").is_err());
     }
+
+    /// Trunk runs separate post_build hooks at the same time; web-csp and web-loading both rewrite index.html,
+    /// so one hook (`web-post`, which runs them in order) must be the only one.
+    #[test]
+    fn trunk_has_one_post_build_hook() {
+        let trunk = include_str!("../../apps/vectorcraft-web/Trunk.toml");
+        let hooks = trunk.lines().filter(|l| l.trim() == "[[hooks]]").count();
+        assert_eq!(hooks, 1, "more than one Trunk hook runs them at the same time");
+        assert!(trunk.contains(r#"command_arguments = ["xtask", "web-post"]"#));
+    }
 }
