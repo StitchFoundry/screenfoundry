@@ -11,24 +11,13 @@ cargo_profile = "web"
 addresses = ["127.0.0.1"]
 port = 8766
 
-# Copy the craft-fonts faces web builds fetch (crates/text/web-fonts.txt) into the site's fonts/
-# folder; a no-op without CRAFT_FONTS_DIR. Runs for `trunk serve` and `trunk build`, through cargo so
-# it needs no shell (xtask/src/web_fonts.rs).
+# One hook, not three: Trunk runs separate post_build hooks at the same time, and web-csp and
+# web-loading both rewrite the staged index.html, so one could overwrite the other's edit (the page
+# shipped with `__SCRIPT_HASHES__` still in its policy). `web-post` runs, in order, web-fonts (copy the
+# craft-fonts faces web builds fetch; a no-op without CRAFT_FONTS_DIR), web-csp (fill the content
+# security policy with the inline scripts' hashes and check it) and web-loading (write the .wasm's
+# size into the loading screen). See xtask/src/web_csp.rs, web_loading.rs, web_fonts.rs.
 [[hooks]]
 stage = "post_build"
 command = "cargo"
-command_arguments = ["xtask", "web-fonts"]
-
-# Fills the page's content security policy with the hashes of its inline scripts and checks it
-# (xtask/src/web_csp.rs): Trunk's module script changes with every build.
-[[hooks]]
-stage = "post_build"
-command = "cargo"
-command_arguments = ["xtask", "web-csp"]
-
-# Writes the .wasm's decompressed size into the loading screen, so its progress bar can show
-# "x of y MB" (xtask/src/web_loading.rs). Runs after web-csp, which only hashes inline scripts.
-[[hooks]]
-stage = "post_build"
-command = "cargo"
-command_arguments = ["xtask", "web-loading"]
+command_arguments = ["xtask", "web-post"]

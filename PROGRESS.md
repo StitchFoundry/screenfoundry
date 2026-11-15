@@ -19,3 +19,4 @@
 - 2026-11-08: issue #47 org move: owner `Stitchwright` -> `StitchFoundry` in the update check, help URL, packaging (nfpm, AppImage update info, wxs, sign.ps1), Cargo.toml, README and docs; web app docs now point at `https://app.screenfoundry.app/`. App ids (`com.stitchwright.*`) unchanged. Bruce-only items in the issue (secrets, domain) untouched.
 - 2026-11-13: issue #75: PR size cap rules added to CLAUDE.md, AGENTS.md and the claude-fix workflow prompt. Docs/prompt only.
 - 2026-11-14 nightly maintenance: queue empty; `cargo xtask ci` tests green (11,139 pass), `no-bundled-fonts` hit disk-full (re-ran by hand, passes; fmt, clippy, pdf-deps, assets, brands, cleanroom, layers ok; wasm not run). sc-core stable over 3 runs. Added `curve.rs` edge tests (max points, NaN/inf, default curve). Tests only.
+- 2026-11-15: issue #82 one sequential Trunk post_build hook (web-post) so web-csp and web-loading stop overwriting each other; fixes the red Web app run.
