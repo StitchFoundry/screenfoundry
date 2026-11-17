@@ -265,4 +265,67 @@ mod tests {
         assert!(separate_spot(&img, &[]).is_err());
         assert!(tone_plate(&img, [255, 255, 255]).is_err());
     }
+    #[test]
+    fn palette_size_bounds() {
+        let img = flat(4, 4, [10, 10, 10], [240, 240, 240]);
+        assert!(extract_palette(&img, 1).is_ok());
+        assert!(extract_palette(&img, 64).is_ok());
+        assert!(extract_palette(&img, 65).is_err());
+    }
+
+    #[test]
+    fn fully_transparent_art_has_no_palette_and_no_ink() {
+        let img = Rgba8::new(2, 2, [9, 9, 9, 0].repeat(4)).unwrap();
+        assert!(extract_palette(&img, 3).unwrap().is_empty());
+        let plates = separate_spot(&img, &[[9, 9, 9]]).unwrap();
+        assert_eq!(plates[0].coverage(), 0.0);
+        assert!(tone_plate(&img, [0, 0, 0]).unwrap().data().iter().all(|&v| v == 0));
+    }
+
+    #[test]
+    fn alpha_cutoff_is_inclusive_at_128() {
+        let img = Rgba8::new(2, 1, vec![255, 0, 0, ALPHA_CUTOFF - 1, 255, 0, 0, ALPHA_CUTOFF]).unwrap();
+        let plates = separate_spot(&img, &[[255, 0, 0]]).unwrap();
+        assert_eq!(plates[0].data(), &[0, 255]);
+        assert_eq!(extract_palette(&img, 2).unwrap(), vec![[255, 0, 0]]);
+    }
+
+    #[test]
+    fn one_colour_art_gives_one_ink_even_when_more_are_asked_for() {
+        let img = Rgba8::new(3, 3, [40, 90, 200, 255].repeat(9)).unwrap();
+        assert_eq!(extract_palette(&img, 8).unwrap(), vec![[40, 90, 200]]);
+    }
+
+    #[test]
+    fn ink_count_bounds_for_spot_separation() {
+        let img = flat(4, 4, [0, 0, 0], [255, 255, 255]);
+        let many: Vec<[u8; 3]> = (0..64).map(|i| [i as u8 * 4, 0, 0]).collect();
+        assert_eq!(separate_spot(&img, &many).unwrap().len(), 64);
+        let too_many: Vec<[u8; 3]> = (0..65).map(|i| [i as u8, 0, 0]).collect();
+        assert!(separate_spot(&img, &too_many).is_err());
+    }
+
+    #[test]
+    fn duplicate_inks_do_not_double_print() {
+        let img = flat(4, 2, [200, 0, 0], [200, 0, 0]);
+        let plates = separate_spot(&img, &[[200, 0, 0], [200, 0, 0]]).unwrap();
+        // Every pixel lands on exactly one of the two identical plates.
+        for (a, b) in plates[0].data().iter().zip(plates[1].data()) {
+            assert_eq!(u16::from(*a) + u16::from(*b), 255);
+        }
+    }
+
+    #[test]
+    fn tone_plate_clamps_beyond_the_ink_and_ignores_transparent() {
+        // A pixel darker than a mid-grey ink saturates at 255; white stays 0; transparent is 0.
+        let img = Rgba8::new(3, 1, vec![0, 0, 0, 255, 255, 255, 255, 255, 0, 0, 0, 0]).unwrap();
+        let t = tone_plate(&img, [128, 128, 128]).unwrap();
+        assert_eq!(t.data(), &[255, 0, 0]);
+    }
+
+    #[test]
+    fn palette_is_deterministic() {
+        let img = flat(30, 6, [200, 30, 30], [20, 20, 160]);
+        assert_eq!(extract_palette(&img, 2).unwrap(), extract_palette(&img, 2).unwrap());
+    }
 }
