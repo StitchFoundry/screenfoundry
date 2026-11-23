@@ -126,4 +126,38 @@ mod tests {
         assert!(nearest(&[], [1, 2, 3]).is_none());
         assert!(snap(&[], [1, 2, 3], 1e9).is_none());
     }
+
+    #[test]
+    fn snap_threshold_edges() {
+        let lib = builtin();
+        // An exact library colour snaps at a threshold of zero; a near one does not.
+        assert_eq!(snap(&lib, [210, 31, 38], 0.0).unwrap().ink.name, "Red");
+        assert!(snap(&lib, [205, 35, 40], 0.0).is_none());
+        // The threshold is inclusive: the match's own distance passes, a hair under fails.
+        let d = nearest(&lib, [205, 35, 40]).unwrap().delta_e;
+        assert!(snap(&lib, [205, 35, 40], d).is_some());
+        assert!(snap(&lib, [205, 35, 40], d - 1e-9).is_none());
+        // Negative and NaN thresholds match nothing; an infinite one matches anything.
+        assert!(snap(&lib, [210, 31, 38], -1.0).is_none());
+        assert!(snap(&lib, [210, 31, 38], f64::NAN).is_none());
+        assert!(snap(&lib, [0, 255, 0], f64::INFINITY).is_some());
+    }
+
+    #[test]
+    fn extreme_colours_find_the_neutral_ends() {
+        let lib = builtin();
+        let white = nearest(&lib, [255, 255, 255]).unwrap();
+        assert_eq!((white.ink.name.as_str(), white.delta_e), ("White", 0.0));
+        let black = nearest(&lib, [0, 0, 0]).unwrap();
+        assert_eq!(black.ink.name, "Black");
+        assert!(black.delta_e.is_finite() && black.delta_e < DEFAULT_MAX_DELTA_E);
+    }
+
+    #[test]
+    fn a_single_ink_library_always_returns_that_ink() {
+        let lib = vec![LibraryInk { name: "Only".into(), rgb: [0, 0, 0], family: "neutral".into() }];
+        for rgb in [[0, 0, 0], [255, 255, 255], [255, 0, 0]] {
+            assert_eq!(nearest(&lib, rgb).unwrap().ink.name, "Only");
+        }
+    }
 }

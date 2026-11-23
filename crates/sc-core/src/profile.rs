@@ -58,6 +58,37 @@ mod tests {
     }
 
     #[test]
+    fn exact_ratio_boundaries_are_not_flagged() {
+        // Exactly mesh / 4 is still fine; exactly mesh / 3 is only "above recommended".
+        assert!(check(200.0, 50.0, 22.5).is_empty());
+        assert_eq!(check(240.0, 80.0, 22.5), vec![Advice::LpiAboveRecommended { recommended_max: 60.0 }]);
+    }
+
+    #[test]
+    fn angle_window_edges_and_wrapping() {
+        // 2 and 88 degrees (and their wrapped equivalents) are the first safe angles.
+        for a in [2.0, 88.0, 92.0, -2.0, 362.0, 45.0] {
+            assert!(check(230.0, 45.0, a).is_empty(), "{a}");
+        }
+        for a in [0.0, 1.9, 88.1, 180.0, 270.0, 360.0, -90.0] {
+            assert_eq!(check(230.0, 45.0, a), vec![Advice::AngleAlignsWithThreads], "{a}");
+        }
+    }
+
+    #[test]
+    fn bad_mesh_or_lpi_skips_the_ratio_check_only() {
+        assert!(check(-100.0, 45.0, 22.5).is_empty());
+        assert!(check(230.0, f64::INFINITY, 22.5).is_empty());
+        assert!(check(f64::INFINITY, 45.0, 22.5).is_empty());
+        // The angle check still runs when the mesh is unusable.
+        assert_eq!(check(f64::NAN, 45.0, 0.0), vec![Advice::AngleAlignsWithThreads]);
+        // Both pieces of advice together, ratio first.
+        assert_eq!(check(90.0, 60.0, 0.0), vec![Advice::LpiTooHigh { max_lpi: 30.0 }, Advice::AngleAlignsWithThreads]);
+        let (lo, hi) = recommended_lpi_range(0.0);
+        assert_eq!((lo, hi), (0.0, 0.0));
+    }
+
+    #[test]
     fn non_finite_input_gives_no_advice_and_no_panic() {
         assert!(check(f64::NAN, f64::NAN, f64::NAN).is_empty());
         assert!(check(0.0, 45.0, 22.5).is_empty());
