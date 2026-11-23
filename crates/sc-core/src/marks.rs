@@ -150,4 +150,49 @@ mod tests {
         assert!(MarkSpec::for_dpi(0.0).is_err());
         assert!(MarkSpec::for_dpi(f64::NAN).is_err());
     }
+
+    #[test]
+    fn marks_that_just_fit_are_accepted_and_one_pixel_less_is_not() {
+        let m = MarkSpec { size_px: 20, line_px: 2, gap_px: 10 };
+        // Each mark needs gap + size/2 + size/2 = 30 px between the art and the film edge.
+        let art = Rect { x: 30, y: 30, width: 10, height: 10 };
+        assert!(corner_centers(70, 70, art, &m).is_ok());
+        assert_eq!(corner_centers(69, 70, art, &m), Err(ScError::MarksDontFit));
+        assert_eq!(corner_centers(70, 69, art, &m), Err(ScError::MarksDontFit));
+        let tight = Rect { x: 29, ..art };
+        assert_eq!(corner_centers(70, 70, tight, &m), Err(ScError::MarksDontFit));
+    }
+
+    #[test]
+    fn zero_sized_art_and_empty_film_are_errors_not_panics() {
+        let m = MarkSpec { size_px: 20, line_px: 2, gap_px: 10 };
+        // A film with no pixels cannot exist, so there is nothing to stamp marks on.
+        assert!(Bitmap1::new(0, 0).is_err());
+        let art = Rect { x: 0, y: 0, width: 0, height: 0 };
+        assert_eq!(corner_centers(0, 0, art, &m), Err(ScError::MarksDontFit));
+        // A 0x0 artwork in the middle of a big enough film still gets four marks.
+        let mut film = Bitmap1::new(100, 100).unwrap();
+        let mid = Rect { x: 50, y: 50, width: 0, height: 0 };
+        assert!(add_registration_marks(&mut film, mid, &m).is_ok());
+    }
+
+    #[test]
+    fn drawing_a_mark_at_the_film_edge_clips_instead_of_panicking() {
+        let m = MarkSpec { size_px: 20, line_px: 2, gap_px: 10 };
+        let mut film = Bitmap1::new(8, 8).unwrap();
+        draw_mark(&mut film, 0, 0, &m);
+        draw_mark(&mut film, 7, 7, &m);
+        draw_mark(&mut film, 1 << 40, 1 << 40, &m);
+        assert!(film.get(0, 0));
+    }
+
+    #[test]
+    fn spec_from_dpi_rejects_out_of_range_and_never_gives_a_zero_line() {
+        assert!(MarkSpec::for_dpi(-300.0).is_err());
+        assert!(MarkSpec::for_dpi(f64::INFINITY).is_err());
+        assert!(MarkSpec::for_dpi(20_000.1).is_err());
+        let low = MarkSpec::for_dpi(10.0).unwrap();
+        assert_eq!(low.line_px, 1);
+        assert!(MarkSpec::for_dpi(20_000.0).is_ok());
+    }
 }
