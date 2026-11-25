@@ -265,4 +265,65 @@ mod tests {
         assert!(separate_spot(&img, &[]).is_err());
         assert!(tone_plate(&img, [255, 255, 255]).is_err());
     }
+
+    fn transparent(w: usize, h: usize) -> Rgba8 {
+        Rgba8::new(w, h, vec![0; w * h * 4]).unwrap()
+    }
+
+    #[test]
+    fn palette_size_limits_are_inclusive() {
+        let img = flat(4, 4, [0, 0, 0], [255, 255, 255]);
+        assert!(extract_palette(&img, 1).is_ok());
+        assert!(extract_palette(&img, 64).is_ok());
+        assert!(extract_palette(&img, 65).is_err());
+    }
+
+    #[test]
+    fn fully_transparent_artwork_gives_no_palette_and_empty_plates() {
+        let img = transparent(3, 3);
+        // Either an error or an empty palette is acceptable; it must not panic or invent inks.
+        if let Ok(p) = extract_palette(&img, 4) {
+            assert!(p.is_empty());
+        }
+        let plates = separate_spot(&img, &[[0, 0, 0], [255, 0, 0]]).unwrap();
+        assert_eq!(plates.len(), 2);
+        assert!(plates.iter().all(|p| p.data().iter().all(|&v| v == 0)));
+        assert!(tone_plate(&img, [0, 0, 0]).unwrap().data().iter().all(|&v| v == 0));
+    }
+
+    #[test]
+    fn ink_count_limits_and_single_pixel_images() {
+        let img = Rgba8::new(1, 1, vec![10, 20, 30, 255]).unwrap();
+        assert_eq!(extract_palette(&img, 3).unwrap().len(), 1);
+        let one = separate_spot(&img, &[[0, 0, 0]]).unwrap();
+        assert_eq!(one[0].data(), &[255]);
+        let many = vec![[1u8, 2, 3]; 65];
+        assert!(separate_spot(&img, &many).is_err());
+        assert!(separate_spot(&img, &many[..64]).is_ok());
+    }
+
+    #[test]
+    fn alpha_cutoff_is_the_boundary_between_ink_and_background() {
+        let below = Rgba8::new(1, 1, vec![0, 0, 0, ALPHA_CUTOFF - 1]).unwrap();
+        let at = Rgba8::new(1, 1, vec![0, 0, 0, ALPHA_CUTOFF]).unwrap();
+        assert_eq!(separate_spot(&below, &[[0, 0, 0]]).unwrap()[0].data(), &[0]);
+        assert_eq!(separate_spot(&at, &[[0, 0, 0]]).unwrap()[0].data(), &[255]);
+    }
+
+    #[test]
+    fn duplicate_inks_still_partition_without_overlap() {
+        let img = flat(4, 2, [200, 30, 30], [30, 30, 200]);
+        let plates = separate_spot(&img, &[[200, 30, 30], [200, 30, 30]]).unwrap();
+        for i in 0..8 {
+            let on = plates.iter().filter(|p| p.data()[i] == 255).count();
+            assert_eq!(on, 1);
+        }
+    }
+
+    #[test]
+    fn tone_plate_of_the_ink_itself_is_full_and_white_is_empty() {
+        let img = flat(2, 1, [255, 255, 255], [0, 0, 128]);
+        let t = tone_plate(&img, [0, 0, 128]).unwrap();
+        assert_eq!(t.data(), &[0, 255]);
+    }
 }
