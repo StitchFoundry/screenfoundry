@@ -203,7 +203,7 @@ fn sampled(cases: Vec<Value>, salt: usize) -> Vec<Value> {
     if full_sweep() {
         return cases;
     }
-    cases.into_iter().enumerate().filter(|(i, _)| *i < 5 || (i + salt) % SAMPLE_STRIDE == 0).map(|(_, v)| v).collect()
+    cases.into_iter().enumerate().filter(|(i, _)| *i < 5 || (i + salt).is_multiple_of(SAMPLE_STRIDE)).map(|(_, v)| v).collect()
 }
 
 #[test]
@@ -212,7 +212,7 @@ fn every_command_with_junk_params() {
     let mut failures = vec![];
     let mut calls = 0usize;
     for fx in Fixture::ALL {
-        for (n, c) in command_specs().into_iter().enumerate() {
+        for (n, c) in command_specs().iter().enumerate() {
             let mut cases = sampled(junk_params(c.params, &path), n);
             if heavy(c.id) {
                 cases.truncate(12);
