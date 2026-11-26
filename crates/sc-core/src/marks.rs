@@ -38,27 +38,38 @@ impl MarkSpec {
 
 /// Centres of the four marks, clockwise from the top left, or an error if any would leave the film.
 pub fn corner_centers(film_w: usize, film_h: usize, art: Rect, m: &MarkSpec) -> Result<[(usize, usize); 4]> {
-    let off = m.gap_px + m.size_px / 2;
-    let (x1, y1) = (art.x.saturating_add(art.width), art.y.saturating_add(art.height));
     let half = m.size_px / 2;
-    if art.x < off + half || art.y < off + half || x1 + off + half > film_w || y1 + off + half > film_h {
+    let off = m.gap_px.checked_add(half).ok_or(ScError::MarksDontFit)?;
+    let reach = off.checked_add(half).ok_or(ScError::MarksDontFit)?;
+    let (x1, y1) = (art.x.saturating_add(art.width), art.y.saturating_add(art.height));
+    let fits_x = x1.checked_add(reach).is_some_and(|v| v <= film_w);
+    let fits_y = y1.checked_add(reach).is_some_and(|v| v <= film_h);
+    if art.x < reach || art.y < reach || !fits_x || !fits_y {
         return Err(ScError::MarksDontFit);
     }
     Ok([(art.x - off, art.y - off), (x1 + off, art.y - off), (x1 + off, y1 + off), (art.x - off, y1 + off)])
 }
 
-/// Draw a crosshair-in-circle centred at `(cx, cy)`.
+/// Draw a crosshair-in-circle centred at `(cx, cy)`. Only the part inside the film is visited, so
+/// centres and sizes of any magnitude are safe (no overflow, no endless loop).
 pub fn draw_mark(film: &mut Bitmap1, cx: usize, cy: usize, m: &MarkSpec) {
-    let r = (m.size_px / 2) as i64;
-    let t = m.line_px as i64;
-    let (cx, cy) = (cx as i64, cy as i64);
-    for dy in -r..=r {
-        for dx in -r..=r {
+    let r = (m.size_px / 2) as i128;
+    let t = m.line_px as i128;
+    let (cx, cy) = (cx as i128, cy as i128);
+    let (w, h) = (film.width() as i128, film.height() as i128);
+    let (dx0, dx1) = ((-r).max(-cx), r.min(w - 1 - cx));
+    let (dy0, dy1) = ((-r).max(-cy), r.min(h - 1 - cy));
+    let inner = (r - t).max(0);
+    for dy in dy0..=dy1 {
+        for dx in dx0..=dx1 {
             let d2 = dx * dx + dy * dy;
-            let ring = d2 <= r * r && d2 >= (r - t).max(0).pow(2);
+            let ring = d2 <= r * r && d2 >= inner * inner;
             let cross = dx.abs() * 2 < t + 1 || dy.abs() * 2 < t + 1;
             if ring || cross {
-                film.set(cx + dx, cy + dy, true);
+                // In range by construction: the loop bounds clip to the film.
+                if let (Ok(x), Ok(y)) = (i64::try_from(cx + dx), i64::try_from(cy + dy)) {
+                    film.set(x, y, true);
+                }
             }
         }
     }
@@ -194,5 +205,19 @@ mod tests {
         let low = MarkSpec::for_dpi(10.0).unwrap();
         assert_eq!(low.line_px, 1);
         assert!(MarkSpec::for_dpi(20_000.0).is_ok());
+    }
+
+    #[test]
+    fn huge_centres_and_specs_do_not_overflow() {
+        let m = MarkSpec { size_px: 20, line_px: 2, gap_px: 10 };
+        let mut film = Bitmap1::new(8, 8).unwrap();
+        draw_mark(&mut film, usize::MAX / 2, usize::MAX / 2, &m);
+        draw_mark(&mut film, usize::MAX, usize::MAX, &m);
+        let huge = MarkSpec { size_px: usize::MAX, line_px: usize::MAX, gap_px: usize::MAX };
+        draw_mark(&mut film, 3, 3, &huge);
+        let art = Rect { x: 1, y: 1, width: 2, height: 2 };
+        assert!(corner_centers(8, 8, art, &huge).is_err());
+        let near = MarkSpec { size_px: 2, line_px: 1, gap_px: usize::MAX - 1 };
+        assert!(corner_centers(8, 8, art, &near).is_err());
     }
 }
