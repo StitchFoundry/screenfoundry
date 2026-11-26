@@ -297,4 +297,99 @@ mod tests {
         bad.dpi = 0.0;
         assert!(pdf(&bad).is_err());
     }
+
+    #[test]
+    fn literal_escapes_delimiters_and_maps_non_winansi() {
+        assert_eq!(literal(""), "()");
+        assert_eq!(literal("a(b)c\\d"), "(a\\(b\\)c\\\\d)");
+        assert_eq!(literal("caf\u{e9}"), "(caf\\351)");
+        assert_eq!(literal("\u{a0}\u{ff}"), "(\\240\\377)");
+        // Control characters, newlines, CJK and emoji become `?`, never raw bytes.
+        assert_eq!(literal("a\nb\tc\0d"), "(a?b?c?d)");
+        assert_eq!(literal("\u{4e2d}\u{1f600}"), "(??)");
+        // Every output is printable ASCII, so the content stream stays valid.
+        assert!(literal("\u{e9}\u{2603}\r\n()\\").bytes().all(|b| (b' '..=b'~').contains(&b)));
+    }
+
+    #[test]
+    fn clip_and_wrap_handle_edges() {
+        assert_eq!(clip("short", 10), "short");
+        assert_eq!(clip("abcdefghij", 10), "abcdefghij");
+        assert_eq!(clip("abcdefghijk", 10), "abcdefg...");
+        assert_eq!(clip("anything", 0), "...");
+        // Cutting counts characters, so multi-byte text never splits mid-character.
+        assert_eq!(clip("\u{e9}\u{e9}\u{e9}\u{e9}\u{e9}", 4), "\u{e9}...");
+        assert!(wrap("", 10).is_empty());
+        assert!(wrap("  \n\t ", 10).is_empty());
+        assert_eq!(wrap("aa bb cc", 5), vec!["aa bb", "cc"]);
+        assert_eq!(wrap("abcdefghijklmnop", 8), vec!["abcde..."]);
+        assert!(wrap(&"word ".repeat(500), 20).iter().all(|l| l.chars().count() <= 20));
+    }
+
+    #[test]
+    fn an_empty_job_still_makes_a_valid_one_page_sheet() {
+        let s = JobSheet { title: String::new(), notes: String::new(), dpi: 300.0, width_px: 0, height_px: 0, films: Vec::new(), advice: Vec::new() };
+        let t = text(&pdf(&s).unwrap());
+        assert!(t.starts_with("%PDF-1.4"));
+        assert!(t.trim_end().ends_with("%%EOF"));
+        assert!(t.contains("/Count 1"));
+        assert!(t.contains("0 screens, in print order"));
+        assert!(t.contains("0.00 x 0.00 in"));
+        assert!(!t.contains("(Advice)"), "no advice heading when there is none");
+    }
+
+    #[test]
+    fn the_largest_allowed_sheet_renders_with_a_consistent_page_tree() {
+        let mut s = sheet(MAX_ROWS);
+        s.advice = (0..MAX_ROWS).map(|i| format!("Advice line {i} {}", "word ".repeat(40))).collect();
+        let t = text(&pdf(&s).unwrap());
+        let pages = t.matches("/Type /Page ").count();
+        assert!(pages > 3, "{pages} pages");
+        assert!(t.contains(&format!("/Count {pages}")));
+        assert!(t.contains("(200. Ink 200)"));
+        assert!(t.contains("(Advice)"));
+        // Exactly the limit is accepted; one over in either list is refused.
+        assert!(pdf(&sheet(MAX_ROWS)).is_ok());
+        let mut over = sheet(1);
+        over.advice = vec!["x".into(); MAX_ROWS + 1];
+        assert!(pdf(&over).is_err());
+    }
+
+    #[test]
+    fn hostile_names_and_numbers_stay_inside_string_literals() {
+        let mut s = sheet(2);
+        s.title = ") Tj ET /Evil (".into();
+        s.films[0].name = "x) 0 0 m (\\".into();
+        s.films[0].role = "a\nb)".into();
+        s.films[0].file = Some("../../etc/passwd\u{0}.pdf".into());
+        s.films[1].name = "\u{4e2d}\u{6587} \u{1f600}".into();
+        s.films[1].mesh = f64::NAN;
+        s.films[1].coverage = f64::INFINITY;
+        s.films[1].rgb = [0, 0, 0];
+        s.notes = "(((( ))))\\\\ \u{2603}".into();
+        s.advice = vec![String::new(), "\u{e9}t\u{e9} (ok)".into()];
+        let t = text(&pdf(&s).unwrap());
+        assert!(t.contains("(\\) Tj ET /Evil \\()"), "{t}");
+        assert!(t.contains("(1. x\\) 0 0 m \\(\\\\)"), "{t}");
+        assert!(t.contains("(a?b\\))"));
+        assert!(t.contains("(../../etc/passwd?.pdf)"));
+        assert!(t.contains("(2. ?? ?)"));
+        assert!(t.contains("\\351t\\351 \\(ok\\)"));
+        assert!(t.trim_end().ends_with("%%EOF"));
+    }
+
+    #[test]
+    fn extreme_sizes_do_not_panic() {
+        let mut s = sheet(1);
+        s.width_px = usize::MAX;
+        s.height_px = usize::MAX;
+        s.dpi = f64::MIN_POSITIVE;
+        assert!(pdf(&s).is_ok());
+        s.dpi = f64::INFINITY;
+        assert!(pdf(&s).is_err());
+        s.dpi = 1e300;
+        assert!(pdf(&s).is_ok());
+        s.dpi = -5.0;
+        assert!(pdf(&s).is_err());
+    }
 }
