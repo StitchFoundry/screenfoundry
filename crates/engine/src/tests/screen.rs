@@ -567,6 +567,25 @@ fn index_rejects_bad_parameters() {
     }
 }
 
+/// #107: a dot or pixel size too big for the film resolution is refused, not silently shrunk.
+#[test]
+fn sizes_too_big_for_the_resolution_are_refused_not_shrunk() {
+    let mut s = Session::new();
+    let src = png_source(8, 8, |_, _| [77, 77, 77, 255]);
+    // 5 mm at 1200 dpi is 236 px, past the 64 px FM dot; 1 mm (47 px) fits.
+    let fm = |mm: f64| json!({"source": src, "dpi": 1200, "screening": "fm", "dotMm": mm});
+    let e = s.execute("screen.halftone", &fm(5.0)).unwrap_err().to_string();
+    assert!(e.contains("dotMm") && e.contains("1200"), "{e}");
+    assert!(s.execute("screen.halftone", &fm(1.0)).is_ok());
+    // 5 mm at 2400 dpi is 472 px, past the 256 px index cell; 2 mm (189 px) fits.
+    let inks = json!([{"color": "#4d4d4d"}]);
+    let index = |mm: f64| json!({"source": src, "dpi": 2400, "inks": inks, "cellMm": mm});
+    let e = s.execute("screen.index", &index(5.0)).unwrap_err().to_string();
+    assert!(e.contains("cellMm") && e.contains("2400"), "{e}");
+    let r = s.execute("screen.index", &index(2.0)).unwrap();
+    assert_eq!(r["cellPx"], 189);
+}
+
 /// A rectangle on the page with a fill; its id.
 fn shape(s: &mut Session, (x, y, w, h): (f64, f64, f64, f64), fill: &str) -> u64 {
     let r = s.execute("shape.rectangle", &json!({"x": x, "y": y, "width": w, "height": h})).unwrap();
