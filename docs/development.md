@@ -322,7 +322,7 @@ other `sv-*` locale resolve to it), Georgian (`ka`, complete; `ka-GE` and `ka_GE
   (`color_settings.rs`), the font database and Fonts folder (`removed_font.rs`, `font_folder.rs`,
   `text_import_fuzz.rs`), installed plug-ins (`plugin_export.rs`, `plugin_fuzz.rs`), the working
   directory (`open_relative_path.rs`) and every command run with junk parameters
-  (`command_sweep.rs`); the `system_fonts` tests of `vectorcraft-text` and `vectorcraft-pdf` too. The
+  (`command_sweep.rs`; its junk sweep runs every 4th case by default, `FULL_SWEEP=1` runs them all); the `system_fonts` tests of `vectorcraft-text` and `vectorcraft-pdf` too. The
   fuzz files under Robustness › Fuzzing keep their own binaries, so a deeper search runs alone, and so
   do `affinity_artboards`, `affinity_text` and `affinity_corpus`, which the Affinity corpus workflow
   names.
