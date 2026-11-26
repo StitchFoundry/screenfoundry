@@ -27,3 +27,4 @@
 - 2026-11-25 nightly maintenance: queue empty; `cargo xtask ci` green except wasm (target not installed, #94); sc-core stable over 3 runs. Added `separate.rs` edge tests (palette limits, transparent art, alpha cutoff, duplicate inks, tone plate ends). Tests only.
 - 2026-11-26 nightly sweep: no needs-triage issues; history secret scan clean; cargo audit unchanged (#19, #98); `cargo xtask ci` on main all 13 steps green (11,168 tests).
 - Filed #107 and fixed it here: FM `dotMm` and index `cellMm` too big for the dpi are now refused with the largest size that fits, instead of silently shrunk.
+- 2026-11-26: issue #22: `command_sweep` junk sweep now runs every 4th case by default (`FULL_SWEEP=1` runs all); `every_command_with_junk_params` passes in ~200s (release). fmt ok; full `cargo xtask ci` not run this session (time).
