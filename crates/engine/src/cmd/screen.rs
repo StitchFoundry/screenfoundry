@@ -841,7 +841,7 @@ fn index_colour(s: &mut Session, p: &Value) -> Result<Value> {
     let marks = bool_or(p, "marks", false);
     let fmt = FilmFormat::parse(C, p)?;
     let mm_px = |mm: f64| mm / 25.4 * dpi;
-    let cell_px = (mm_px(num(p, C, "cellMm", 0.5, 0.05..=5.0)?).round().max(1.0) as usize).min(MAX_CELL_PX);
+    let cell_px = px_of_mm(C, "cellMm", num(p, C, "cellMm", 0.5, 0.05..=5.0)?, dpi, MAX_CELL_PX)?;
     let dither = num(p, C, "dither", 1.0, 0.0..=1.0)?;
     let base = color(C, "base", p.get("base"), [255, 255, 255])?;
     let img = artwork(s, p, C, dpi)?;
@@ -868,6 +868,17 @@ fn index_colour(s: &mut Session, p: &Value) -> Result<Value> {
     attach(&mut out, sheet);
     attach_dcs(&mut out, dcs);
     Ok(out)
+}
+
+/// `mm` at `dpi` as whole film pixels (at least 1), refused when over `max` pixels rather than
+/// shrunk to fit, so the film never comes out smaller than asked (#107).
+fn px_of_mm(cmd: &str, key: &str, mm: f64, dpi: f64, max: usize) -> Result<usize> {
+    let px = (mm / 25.4 * dpi).round().max(1.0);
+    if !px.is_finite() || px > max as f64 {
+        let most = (max as f64 * 25.4 / dpi * 100.0).floor() / 100.0;
+        return Err(bad(cmd, format!("at {dpi} dpi `{key}` is at most {most}: lower `dpi` or `{key}`")));
+    }
+    Ok(px as usize)
 }
 
 /// `dotCurve`: a measured curve as [[film, printed], …] tones in 0..1 (what each film tone printed as).
@@ -929,7 +940,7 @@ fn scatter_of(cmd: &str, p: &Value, dpi: f64) -> Result<Option<Scatter>> {
     let kernel = kernel_of(p, cmd, "fmKernel")?;
     let dot_mm = num(p, cmd, "dotMm", 0.2, 0.02..=5.0)?;
     let fm = FmOptions {
-        cell_px: ((dot_mm / 25.4 * dpi).round() as usize).clamp(1, MAX_FM_CELL_PX),
+        cell_px: px_of_mm(cmd, "dotMm", dot_mm, dpi, MAX_FM_CELL_PX)?,
         min_dot: num(p, cmd, "minDot", 0.08, 0.0..=1.0)?,
         max_dot: num(p, cmd, "maxDot", 0.95, 0.0..=1.0)?,
         dot_gain: num(p, cmd, "dotGain", 0.0, 0.0..=MAX_DOT_GAIN)?,
