@@ -189,14 +189,31 @@ fn heavy(id: &str) -> bool {
     id.starts_with("document.serialize") || id.starts_with("document.export") || id == "document.open"
 }
 
+/// Every Nth junk case runs in the default sweep; `FULL_SWEEP=1` runs them all (the nightly/deep run).
+const SAMPLE_STRIDE: usize = 4;
+
+/// Whether the exhaustive junk sweep was asked for (`FULL_SWEEP=1`).
+fn full_sweep() -> bool {
+    std::env::var("FULL_SWEEP").is_ok_and(|v| v != "0" && !v.is_empty())
+}
+
+/// The cases to run: all of them in a full sweep; otherwise the five fixed shape cases plus every
+/// `SAMPLE_STRIDE`th of the per-key cases, offset by the command so the sample moves around.
+fn sampled(cases: Vec<Value>, salt: usize) -> Vec<Value> {
+    if full_sweep() {
+        return cases;
+    }
+    cases.into_iter().enumerate().filter(|(i, _)| *i < 5 || (i + salt) % SAMPLE_STRIDE == 0).map(|(_, v)| v).collect()
+}
+
 #[test]
 fn every_command_with_junk_params() {
     let path = safe_path();
     let mut failures = vec![];
     let mut calls = 0usize;
     for fx in Fixture::ALL {
-        for c in command_specs() {
-            let mut cases = junk_params(c.params, &path);
+        for (n, c) in command_specs().into_iter().enumerate() {
+            let mut cases = sampled(junk_params(c.params, &path), n);
             if heavy(c.id) {
                 cases.truncate(12);
             }
@@ -208,7 +225,8 @@ fn every_command_with_junk_params() {
             }
         }
     }
-    assert!(calls > 5_000, "only {calls} calls");
+    let min_calls = if full_sweep() { 5_000 } else { 1_000 };
+    assert!(calls > min_calls, "only {calls} calls");
     failures.sort();
     failures.dedup();
     assert!(
