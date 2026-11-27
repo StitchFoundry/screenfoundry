@@ -258,4 +258,88 @@ mod tests {
         let p = Gray8::new(3, 1, vec![0, 127, 128]).unwrap();
         assert_eq!(solid(&p).unwrap().bits(), &[false, false, true]);
     }
+
+    #[test]
+    fn a_one_pixel_plate_screens_without_panicking() {
+        for v in [0u8, 1, 128, 254, 255] {
+            let plate = Gray8::filled(1, 1, v).unwrap();
+            let film = halftone(&plate, &HalftoneOptions::default()).unwrap();
+            assert_eq!((film.width(), film.height(), film.bits().len()), (1, 1, 1));
+        }
+        assert_eq!(solid(&Gray8::filled(1, 1, 255).unwrap()).unwrap().bits(), &[true]);
+    }
+
+    #[test]
+    fn an_empty_plate_gives_an_empty_film_or_an_error() {
+        // Either is acceptable; it must not panic or return a film of the wrong size.
+        if let Ok(plate) = Gray8::new(0, 0, vec![])
+            && let Ok(film) = halftone(&plate, &HalftoneOptions::default())
+        {
+            assert!(film.bits().is_empty());
+        }
+    }
+
+    #[test]
+    fn lpi_at_the_four_pixel_limit_is_accepted_and_just_past_it_rejected() {
+        let p = Gray8::filled(16, 16, 128).unwrap();
+        let at = HalftoneOptions { dpi: 200.0, lpi: 50.0, ..HalftoneOptions::default() };
+        assert!(halftone(&p, &at).is_ok());
+        let past = HalftoneOptions { lpi: 50.5, ..at };
+        assert!(halftone(&p, &past).is_err());
+        for lpi in [f64::NAN, f64::INFINITY, 0.0, -1.0] {
+            assert!(halftone(&p, &HalftoneOptions { lpi, ..at }).is_err(), "{lpi}");
+        }
+    }
+
+    #[test]
+    fn dpi_bounds_and_non_finite_dot_limits_are_rejected() {
+        let p = Gray8::filled(4, 4, 128).unwrap();
+        let d = HalftoneOptions::default();
+        assert!(halftone(&p, &HalftoneOptions { dpi: 20_001.0, ..d }).is_err());
+        assert!(halftone(&p, &HalftoneOptions { dpi: f64::INFINITY, ..d }).is_err());
+        assert!(halftone(&p, &HalftoneOptions { min_dot: f64::NAN, ..d }).is_err());
+        assert!(halftone(&p, &HalftoneOptions { max_dot: f64::NAN, ..d }).is_err());
+        assert!(halftone(&p, &HalftoneOptions { min_dot: -0.1, ..d }).is_err());
+    }
+
+    #[test]
+    fn extreme_but_finite_angles_still_screen() {
+        let p = Gray8::filled(24, 24, 128).unwrap();
+        for angle in [-720.0, -90.0, 0.0, 90.0, 360.0, 1e6] {
+            let film = halftone(&p, &opts(DotShape::Round, angle)).unwrap();
+            assert!((film.coverage() - 0.5).abs() < 0.2, "angle {angle}: {}", film.coverage());
+        }
+        // A full turn is the same screen.
+        let a = halftone(&p, &opts(DotShape::Round, 10.0)).unwrap();
+        let b = halftone(&p, &opts(DotShape::Round, 370.0)).unwrap();
+        assert_eq!(a.bits().len(), b.bits().len());
+    }
+
+    #[test]
+    fn equal_min_and_max_dot_leave_only_solid_or_clear() {
+        let o = HalftoneOptions { min_dot: 0.5, max_dot: 0.5, ..HalftoneOptions::default() };
+        let below = Gray8::filled(20, 20, 100).unwrap();
+        let above = Gray8::filled(20, 20, 160).unwrap();
+        assert_eq!(halftone(&below, &o).unwrap().coverage(), 0.0);
+        assert_eq!(halftone(&above, &o).unwrap().coverage(), 1.0);
+    }
+
+    #[test]
+    fn compensate_gain_survives_out_of_range_input() {
+        for tone in [-1.0, 2.0, f64::INFINITY, f64::NEG_INFINITY] {
+            let t = compensate_gain(tone, MAX_DOT_GAIN);
+            assert!((0.0..=1.0).contains(&t), "{tone} gave {t}");
+        }
+    }
+
+    #[test]
+    fn maximum_dot_gain_keeps_the_tone_ramp_monotonic() {
+        let o = HalftoneOptions { dot_gain: MAX_DOT_GAIN, ..opts(DotShape::Round, 22.5) };
+        let mut last = -1.0;
+        for v in [0u8, 32, 64, 128, 192, 224, 255] {
+            let c = halftone(&Gray8::filled(120, 120, v).unwrap(), &o).unwrap().coverage();
+            assert!(c >= last, "tone {v}: {c} < {last}");
+            last = c;
+        }
+    }
 }
