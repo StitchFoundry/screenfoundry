@@ -6,7 +6,7 @@ ScreenFoundry separates artwork into spot-colour plates, builds the underbase, t
 screens tones into halftone dots at the right angle for your mesh, and adds registration marks.
 It is written in pure Rust, MIT OR Apache-2.0, and built on the
 [StitchFoundry](https://github.com/StitchFoundry/StitchFoundry) / VectorCraft vector editor so art,
-separations and films live in one document, with PhotoCraft-style raster tools to follow.
+separations and films live in one document, with raster tools to follow.
 
 > [!NOTE]
 > **Pre-release, early.** The separation core (`crates/sc-core`) exists and is tested. The app
