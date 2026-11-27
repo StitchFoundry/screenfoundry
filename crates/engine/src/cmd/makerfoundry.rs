@@ -5,6 +5,7 @@
 
 use sc_maker::Site;
 use sc_maker::publish::{MAX_FILE_BYTES, svg_file_name};
+use sc_maker::share_prompt::{Choice, should_offer};
 use serde_json::{Value, json};
 
 use super::fileio::encode_all;
@@ -13,15 +14,64 @@ use super::{CommandSpec, Result, Session, bad, cmd, has_doc, str_param};
 const C: &str = "screen.makerFoundryExport";
 
 pub fn specs() -> Vec<CommandSpec> {
-    vec![cmd!(
-        query "screen.makerFoundryExport",
-        "Export for MakerFoundry",
-        [],
-        None,
-        "{fileName?: the name to publish under (default: the document's title; always a plain .svg name)} the drawing as the SVG MakerFoundry takes as a design (not sent: ui.publishToMakerFoundry sends it) → {fileName, bytes, fileBase64, site, app, warnings}; an empty drawing or one over 8 MB is an error",
-        has_doc,
-        export
-    )]
+    vec![
+        cmd!(
+            query "screen.makerFoundryExport",
+            "Export for MakerFoundry",
+            [],
+            None,
+            "{fileName?: the name to publish under (default: the document's title; always a plain .svg name)} the drawing as the SVG MakerFoundry takes as a design (not sent: ui.publishToMakerFoundry sends it) → {fileName, bytes, fileBase64, site, app, warnings}; an empty drawing or one over 8 MB is an error",
+            has_doc,
+            export
+        ),
+        cmd!(
+            query "makerfoundry.shareOffer",
+            "Offer to Share on MakerFoundry",
+            [],
+            None,
+            "{exportSucceeded?: whether the export just done worked (default true)} whether to show \"Share it on MakerFoundry?\" now: the Preferences toggle is on, the export worked and this document wasn't asked yet → {offer}",
+            has_doc,
+            share_offer
+        ),
+        cmd!(
+            "makerfoundry.shareAnswer",
+            "Answer the MakerFoundry Share Prompt",
+            [],
+            None,
+            "{choice: \"shareFree\" | \"sell\" | \"notNow\", dontAskAgain?: bool (false)} record the answer: this document counts as asked, and dontAskAgain turns Preferences > MakerFoundry > Offer to share after export off → {proceed: the host goes on to sign in and open the draft page, offerSetting}",
+            has_doc,
+            share_answer
+        ),
+    ]
+}
+
+fn share_offer(s: &mut Session, p: &Value) -> Result<Value> {
+    let succeeded = match p.get("exportSucceeded") {
+        None | Some(Value::Null) => true,
+        Some(v) => v.as_bool().ok_or_else(|| bad("makerfoundry.shareOffer", "exportSucceeded must be true or false"))?,
+    };
+    let shown = s.doc()?.share_prompt;
+    Ok(json!({"offer": should_offer(s.prefs.offer_share_after_export, shown, succeeded)}))
+}
+
+fn share_answer(s: &mut Session, p: &Value) -> Result<Value> {
+    const A: &str = "makerfoundry.shareAnswer";
+    let choice = match str_param(p, "choice") {
+        Some("shareFree") => Choice::ShareFree,
+        Some("sell") => Choice::Sell,
+        Some("notNow") => Choice::NotNow,
+        _ => return Err(bad(A, "choice must be shareFree, sell or notNow")),
+    };
+    let dont_ask = match p.get("dontAskAgain") {
+        None | Some(Value::Null) => false,
+        Some(v) => v.as_bool().ok_or_else(|| bad(A, "dontAskAgain must be true or false"))?,
+    };
+    let setting = s.prefs.offer_share_after_export;
+    let st = s.doc_mut()?;
+    let out = st.share_prompt.record(choice, dont_ask, setting);
+    st.share_prompt = out.prompt;
+    s.prefs.offer_share_after_export = out.offer_setting;
+    Ok(json!({"proceed": out.proceed, "offerSetting": out.offer_setting}))
 }
 
 fn export(s: &mut Session, p: &Value) -> Result<Value> {
@@ -100,6 +150,41 @@ mod tests {
         art.execute("select.all", &json!({})).unwrap();
         art.execute("edit.clear", &json!({})).unwrap();
         assert!(art.execute(C, &json!({})).is_err());
+    }
+
+    #[test]
+    fn offered_once_per_document_and_never_when_off_or_failed() {
+        let mut s = empty_session();
+        let offer = |s: &mut Session, p: Value| s.execute("makerfoundry.shareOffer", &p).unwrap()["offer"] == true;
+        assert!(!offer(&mut s, json!({"exportSucceeded": false})));
+        assert!(offer(&mut s, json!({})));
+        let r = s.execute("makerfoundry.shareAnswer", &json!({"choice": "notNow"})).unwrap();
+        assert_eq!((r["proceed"].clone(), r["offerSetting"].clone()), (json!(false), json!(true)));
+        assert!(!offer(&mut s, json!({})));
+        // another document is still asked
+        s.execute("file.new", &json!({"width": 10, "height": 10})).unwrap();
+        assert!(offer(&mut s, json!({})));
+        s.prefs.offer_share_after_export = false;
+        assert!(!offer(&mut s, json!({})));
+    }
+
+    #[test]
+    fn dont_ask_again_turns_the_setting_off_and_share_proceeds() {
+        let mut s = empty_session();
+        let r = s.execute("makerfoundry.shareAnswer", &json!({"choice": "sell", "dontAskAgain": true})).unwrap();
+        assert_eq!((r["proceed"].clone(), r["offerSetting"].clone()), (json!(true), json!(false)));
+        assert!(!s.prefs.offer_share_after_export);
+        s.execute("file.new", &json!({"width": 10, "height": 10})).unwrap();
+        assert_eq!(s.execute("makerfoundry.shareOffer", &json!({})).unwrap()["offer"], false);
+    }
+
+    #[test]
+    fn bad_answers_are_errors() {
+        let mut s = empty_session();
+        assert!(s.execute("makerfoundry.shareAnswer", &json!({"choice": "maybe"})).is_err());
+        assert!(s.execute("makerfoundry.shareAnswer", &json!({"choice": "sell", "dontAskAgain": "yes"})).is_err());
+        assert!(s.execute("makerfoundry.shareOffer", &json!({"exportSucceeded": 3})).is_err());
+        assert!(Session::new().execute("makerfoundry.shareOffer", &json!({})).is_err());
     }
 
     #[test]

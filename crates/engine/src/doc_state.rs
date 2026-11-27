@@ -92,6 +92,9 @@ pub struct DocState {
     /// paths the document links to are looked at within them later too, when the Links panel
     /// asks about a link outside any caller's scope.
     pub opened_by: Option<Arc<file_access::AutomationRoots>>,
+    /// Whether "Share it on MakerFoundry?" was already offered for this document (add-on 37). Not
+    /// saved yet: once per project while it is open.
+    pub share_prompt: sc_maker::share_prompt::SharePrompt,
 }
 
 static NEXT_DOC_UID: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
@@ -267,6 +270,7 @@ impl DocState {
             import_losses: vec![],
             last_perspective: None,
             opened_by: file_access::current(),
+            share_prompt: Default::default(),
         }
     }
     /// Unsaved changes: the document differs from the saved one (selection changes and changes that
