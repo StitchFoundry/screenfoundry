@@ -10,12 +10,14 @@
 //!
 //! - [`publish`]: send a design as a private draft and read the answer;
 //! - [`account`]: Foundry Account sign-in, sign-up, sign-out and the account's credits;
+//! - [`share_prompt`]: when to offer "Share it on MakerFoundry?" after an export (state only);
 //! - [`link`]: the `?open=` address of a design to open, strictly checked, and the name of the file.
 #![forbid(unsafe_code)]
 
 pub mod account;
 pub mod link;
 pub mod publish;
+pub mod share_prompt;
 mod text;
 
 /// An HTTP request for the host to send: no cookies, no redirects (the host follows neither).

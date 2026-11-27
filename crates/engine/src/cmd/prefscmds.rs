@@ -66,6 +66,7 @@ pub const PREF_CATEGORIES: &[&str] = &[
     "Clipboard Handling",
     "Appearance of Black",
     "Devices",
+    "MakerFoundry",
 ];
 
 /// Every unit as (`Unit::key`, `Unit::label`).
@@ -131,6 +132,7 @@ pub const PREF_SPECS: &[PrefSpec] = &[
     p!("showToolTips", "General", "Options", "Show Tool Tips", bool),
     p!("antiAliasedArtwork", "General", "Options", "Anti-aliased Artwork", bool),
     p!("selectSameTintPercent", "General", "Options", "Select Same Tint %", bool),
+    p!("offerShareAfterExport", "MakerFoundry", "", "Offer to share after export", bool),
     p!("showHomeScreen", "General", "Options", "Show The Home Screen When No Documents Are Open", bool),
     p!("usePreviewBounds", "General", "Options", "Use Preview Bounds", bool),
     p!("displayPrintSize", "General", "Options", "Display Print Size at 100% Zoom", bool),

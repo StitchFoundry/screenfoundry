@@ -26,6 +26,9 @@ pub struct Prefs {
     pub anti_aliased_artwork: bool,
     pub select_same_tint_percent: bool,
     pub show_home_screen: bool,
+    /// MakerFoundry › Offer to share after export: after the first export of a project, ask once
+    /// whether to share it on MakerFoundry (on by default).
+    pub offer_share_after_export: bool,
     pub use_preview_bounds: bool,
     pub display_print_size: bool,
     /// Screen points that make an inch on this display (View › Calibrate Life Size…): with
@@ -309,6 +312,7 @@ impl Default for Prefs {
             anti_aliased_artwork: true,
             select_same_tint_percent: false,
             show_home_screen: true,
+            offer_share_after_export: true,
             use_preview_bounds: false,
             display_print_size: false,
             screen_points_per_inch: 96.0,
