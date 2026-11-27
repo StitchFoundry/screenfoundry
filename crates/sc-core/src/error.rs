@@ -15,6 +15,8 @@ pub enum ScError {
     SizeMismatch,
     #[error("registration marks do not fit on the film")]
     MarksDontFit,
+    #[error("the copies do not fit on the sheet")]
+    NupDoesntFit,
 }
 
 pub type Result<T> = std::result::Result<T, ScError>;
