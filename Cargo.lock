@@ -4775,6 +4775,7 @@ version = "0.1.1"
 dependencies = [
  "fax 0.3.0",
  "png 0.18.1",
+ "proptest",
  "serde",
  "serde_json",
  "thiserror 2.0.21",
