@@ -303,4 +303,54 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn names_parse_with_padding_and_case_but_not_empty_or_partial() {
+        assert_eq!(Garment::parse("  TSHIRT "), Some(Garment::TShirt));
+        assert_eq!(Garment::parse("tote bag"), Some(Garment::Tote));
+        assert_eq!(Placement::parse(" LEFTCHEST\t"), Some(Placement::LeftChest));
+        for s in ["", "   ", "tshir", "t-shirt!"] {
+            assert_eq!(Garment::parse(s), None, "{s:?}");
+            assert_eq!(Placement::parse(s), None, "{s:?}");
+        }
+    }
+
+    #[test]
+    fn the_underbase_rule_is_monotone_along_the_grey_ramp() {
+        let mut was_light = false;
+        for v in 0..=255u8 {
+            let light = !wants_underbase([v, v, v]);
+            assert!(!was_light || light, "grey {v} went dark again");
+            was_light = light;
+        }
+        assert!(wants_underbase([0, 0, 0]) && !wants_underbase([255, 255, 255]));
+    }
+
+    #[test]
+    fn mockups_stay_finite_for_empty_and_huge_print_areas() {
+        for g in Garment::ALL {
+            for p in Placement::ALL {
+                for area in [(0.0, 0.0), (0.001, 0.001), (1e6, 1e6)] {
+                    let m = Mockup::new(g, p, area);
+                    assert!(m.body.len() >= 4, "{g:?} {p:?}");
+                    let all = m.body.iter().chain(m.extras.iter().flatten());
+                    assert!(all.flatten().all(|v| v.is_finite()), "{g:?} {p:?} {area:?}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn nan_areas_do_not_panic_and_extras_match_the_item() {
+        for g in Garment::ALL {
+            let m = Mockup::new(g, Placement::Custom, (f64::NAN, f64::INFINITY));
+            assert!(!m.body.is_empty());
+        }
+        let extras = |g| Mockup::new(g, Placement::FullFront, (12.0, 14.0)).extras.len();
+        assert_eq!((extras(Garment::TShirt), extras(Garment::Hoodie), extras(Garment::Tote)), (0, 1, 2));
+        assert_eq!((extras(Garment::Poster), extras(Garment::Other)), (0, 0));
+        // A poster is the print area plus an even margin all round.
+        let m = Mockup::new(Garment::Poster, Placement::Custom, (0.0, 0.0));
+        assert_eq!(m.body, vec![[-1.5, -1.5], [1.5, -1.5], [1.5, 1.5], [-1.5, 1.5]]);
+    }
 }
