@@ -12,6 +12,7 @@
 //! * [`curve`] – a measured dot-gain curve and its inverse, for compensating the film.
 //! * [`halftone`] – amplitude-modulated screening (round, elliptical, line) at a screen angle.
 //! * [`marks`] – registration crosshairs.
+//! * [`nup`] – repeat a film in rows and columns on one sheet.
 //! * [`dcs`] – DCS 2.0 files: a composite and one EPS per plate, single or multiple files.
 //! * [`dtf`] – direct-to-film files: mirrored colour art and a white layer.
 //! * [`export`] – 1-bit PNG and TIFF film files with their resolution.
@@ -42,6 +43,7 @@ pub mod job;
 pub mod jobsheet;
 pub mod marks;
 pub mod morph;
+pub mod nup;
 mod pdfout;
 pub mod profile;
 pub mod separate;
