@@ -1571,3 +1571,26 @@ fn vector_dots_at_a_low_resolution_get_a_coarser_screen_instead_of_an_error() {
     let ok = s.execute("screen.separateVector", &json!({"dpi": 300})).unwrap();
     assert!(!ok["notes"].as_array().unwrap().iter().any(|n| n.as_str().unwrap().contains("lowered")));
 }
+
+#[test]
+fn ink_names_print_in_the_margin_when_asked() {
+    let mut s = session();
+    let base = json!({"dpi": 100, "inks": inks(), "marks": true});
+    let plain = s.execute("screen.separate", &base).unwrap();
+    let mut with = base.clone();
+    with["inkLabel"] = json!(true);
+    let labelled = s.execute("screen.separate", &with).unwrap();
+    let (pf, lf) = (plain["films"].as_array().unwrap(), labelled["films"].as_array().unwrap());
+    assert!(lf.len() >= 2);
+    // Same size, so the label sits in the existing margin; each film's bits differ from the plain one.
+    for (a, b) in pf.iter().zip(lf) {
+        assert_eq!((a["width"].as_u64(), a["height"].as_u64()), (b["width"].as_u64(), b["height"].as_u64()));
+        assert_ne!(a["dataBase64"], b["dataBase64"], "{} carries its name", b["name"]);
+    }
+    let names: std::collections::HashSet<_> = lf.iter().map(|f| f["dataBase64"].as_str().unwrap().to_string()).collect();
+    assert_eq!(names.len(), lf.len(), "distinct labels give distinct films");
+    // The label needs the marks' margin, and the position is checked.
+    assert!(s.execute("screen.separate", &json!({"dpi": 100, "inks": inks(), "inkLabel": true})).is_err());
+    with["inkLabelPosition"] = json!("sideways");
+    assert!(s.execute("screen.separate", &with).is_err());
+}

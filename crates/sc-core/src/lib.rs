@@ -40,6 +40,7 @@ pub mod index;
 pub mod inklib;
 pub mod job;
 pub mod jobsheet;
+pub mod label;
 pub mod marks;
 pub mod morph;
 mod pdfout;
