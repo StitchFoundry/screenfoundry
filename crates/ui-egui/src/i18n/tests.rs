@@ -1938,3 +1938,14 @@ fn polish_plurals_have_three_forms() {
     }
     assert!(count >= 13, "Polish plural rows missing");
 }
+
+/// The Help menu's feedback labels (#92) are translated in every complete catalog.
+#[test]
+fn help_feedback_labels_are_translated_everywhere() {
+    for l in LANGUAGES.iter().filter(|l| l.complete_menus) {
+        let cat = l.catalog();
+        for label in ["Report a Bug…", "Request a Feature…"] {
+            assert!(cat.plain(label).is_some(), "{}: no translation for {label}", l.code);
+        }
+    }
+}
