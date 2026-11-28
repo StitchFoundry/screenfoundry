@@ -297,4 +297,119 @@ mod tests {
         bad.dpi = 0.0;
         assert!(pdf(&bad).is_err());
     }
+
+    #[test]
+    fn an_empty_job_still_makes_one_valid_page() {
+        let mut s = sheet(0);
+        s.advice.clear();
+        s.notes.clear();
+        let t = text(&pdf(&s).unwrap());
+        assert!(t.starts_with("%PDF-1.4") && t.contains("/Count 1"), "{t}");
+        assert!(t.contains("0 screens, in print order"), "{t}");
+        assert!(!t.contains("(Advice)"), "no advice heading without advice");
+        assert!(t.contains("Made with ScreenFoundry"));
+    }
+
+    #[test]
+    fn the_row_cap_is_inclusive_for_screens_and_advice() {
+        assert!(pdf(&sheet(MAX_ROWS)).is_ok());
+        let mut s = sheet(1);
+        s.advice = vec!["a".into(); MAX_ROWS];
+        assert!(pdf(&s).is_ok());
+        s.advice.push("one too many".into());
+        assert!(pdf(&s).is_err());
+    }
+
+    #[test]
+    fn bad_dpi_values_are_refused() {
+        for dpi in [f64::INFINITY, f64::NEG_INFINITY, -300.0] {
+            let mut s = sheet(1);
+            s.dpi = dpi;
+            assert!(pdf(&s).is_err(), "dpi {dpi}");
+        }
+    }
+
+    #[test]
+    fn zero_size_and_non_finite_numbers_do_not_panic() {
+        let mut s = sheet(2);
+        s.width_px = 0;
+        s.height_px = 0;
+        s.films[0].mesh = f64::NAN;
+        s.films[0].coverage = f64::INFINITY;
+        s.films[1].mesh = -1.0;
+        s.films[1].coverage = -0.5;
+        let t = text(&pdf(&s).unwrap());
+        assert!(t.contains("0 x 0 px"), "{t}");
+        assert!(t.contains("/Count 1"));
+    }
+
+    #[test]
+    fn literal_escapes_and_replaces() {
+        assert_eq!(literal(""), "()");
+        assert_eq!(literal("a(b)c\\d"), "(a\\(b\\)c\\\\d)");
+        // Latin-1 supplement is octal-escaped; the boundary characters on both sides are not.
+        assert_eq!(literal("\u{a0}\u{ff}"), "(\\240\\377)");
+        assert_eq!(literal("\u{100}\u{7f}"), "(??)");
+        // Control characters (a newline would end the operator line) become `?`.
+        assert_eq!(literal("a\nb\r\tc\0"), "(a?b??c?)");
+        assert_eq!(literal("~ "), "(~ )");
+    }
+
+    #[test]
+    fn a_hostile_name_cannot_inject_pdf_operators() {
+        let mut s = sheet(1);
+        s.films[0].name = ") Tj ET\n/Evil gs (".into();
+        s.title = "\n1 0 0 rg".into();
+        let t = text(&pdf(&s).unwrap());
+        assert!(!t.contains("\n/Evil"), "newline was replaced");
+        assert!(t.contains("\\) Tj ET?/Evil gs \\("), "{t}");
+    }
+
+    #[test]
+    fn clip_counts_characters_not_bytes() {
+        assert_eq!(clip("abc", 3), "abc");
+        assert_eq!(clip("abcd", 3), "...");
+        assert_eq!(clip("abcdef", 5), "ab...");
+        assert_eq!(clip("", 0), "");
+        assert_eq!(clip("x", 0), "...");
+        // Multi-byte characters are never split.
+        assert_eq!(clip("\u{2603}\u{2603}\u{2603}\u{2603}\u{2603}", 5), "\u{2603}\u{2603}\u{2603}\u{2603}\u{2603}");
+        assert_eq!(clip("\u{2603}\u{2603}\u{2603}\u{2603}\u{2603}\u{2603}", 5), "\u{2603}\u{2603}...");
+    }
+
+    #[test]
+    fn wrap_breaks_on_words_and_cuts_long_ones() {
+        assert!(wrap("", 10).is_empty());
+        assert!(wrap("   \n\t ", 10).is_empty());
+        assert_eq!(wrap("aa bb cc", 5), vec!["aa bb", "cc"]);
+        assert_eq!(wrap("aa  bb", 10), vec!["aa bb"]);
+        let lines = wrap(&"w".repeat(50), 10);
+        assert_eq!(lines.len(), 1);
+        assert_eq!(lines[0].chars().count(), 10);
+        // A tiny width never loops forever or panics.
+        assert!(wrap("a bb ccc", 0).iter().all(|l| !l.is_empty()));
+        assert!(wrap("a bb ccc", 1).iter().all(|l| !l.is_empty()));
+    }
+
+    #[test]
+    fn long_advice_wraps_with_a_hanging_indent_and_long_notes_paginate() {
+        let mut s = sheet(1);
+        s.advice = vec!["word ".repeat(60)];
+        let t = text(&pdf(&s).unwrap());
+        assert!(t.contains("62.00"), "continuation lines are indented: {t}");
+        let mut s = sheet(1);
+        s.notes = "note ".repeat(2000);
+        let t = text(&pdf(&s).unwrap());
+        assert!(t.matches("/Type /Page ").count() >= 2, "long notes run onto a second page");
+        assert!(t.matches("Made with ScreenFoundry").count() == 1);
+    }
+
+    #[test]
+    fn rgb_extremes_make_valid_colours() {
+        let mut s = sheet(2);
+        s.films[0].rgb = [0, 0, 0];
+        s.films[1].rgb = [255, 255, 255];
+        let t = text(&pdf(&s).unwrap());
+        assert!(t.contains("0.000 0.000 0.000 rg") && t.contains("1.000 1.000 1.000 rg"));
+    }
 }
