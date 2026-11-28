@@ -369,4 +369,52 @@ mod tests {
         assert!(!c.bits.get(x0 + k, y0 + k) && !c.bits.get(x0 + k, y0 + 3 * k));
         assert!(c.bits.get(x0 + k, y0) && c.bits.get(x0 + k, y0 + 2 * k) && c.bits.get(x0 + k, y0 + 4 * k));
     }
+
+    #[test]
+    fn dpi_limits_are_inclusive_and_infinities_are_rejected() {
+        let one = Parts { tones: false, lines: true, trap: false };
+        let films = test_page(&page(100.0, one)).unwrap();
+        assert_eq!((films[0].bitmap.width(), films[0].bitmap.height()), (866, 354));
+        for dpi in [99.9, 1200.1, 0.0, -300.0, f64::INFINITY, f64::NEG_INFINITY] {
+            assert!(test_page(&page(dpi, one)).is_err(), "{dpi}");
+        }
+    }
+
+    #[test]
+    fn the_same_page_twice_is_the_same_films() {
+        let a = test_page(&page(300.0, ALL)).unwrap();
+        let b = test_page(&page(300.0, ALL)).unwrap();
+        assert_eq!(a, b);
+        // A screen too coarse for the dpi is an error, not a bad film (45 lpi needs 180+ dpi).
+        let tones = Parts { tones: true, lines: false, trap: false };
+        assert!(test_page(&page(100.0, tones)).is_err());
+    }
+
+    #[test]
+    fn numbers_never_draw_outside_the_film_or_panic() {
+        let mut c = canvas(100.0).unwrap();
+        let (w, h) = (c.bits.width(), c.bits.height());
+        c.number(0, 1.0, 1.0);
+        assert!(c.bits.get(c.px(1.0), c.px(1.0)), "a zero is drawn");
+        // The largest number, hanging off the right and bottom edges, and one far outside.
+        c.number(u32::MAX, PAGE_MM.0 - 3.0, PAGE_MM.1 - 1.0);
+        c.number(7, 1e9, 1e9);
+        c.number(7, -50.0, -50.0);
+        assert_eq!((c.bits.width(), c.bits.height()), (w, h));
+    }
+
+    #[test]
+    fn drawing_clamps_negative_and_reversed_boxes_and_lines_are_a_pixel_wide_at_least() {
+        let mut c = canvas(100.0).unwrap();
+        assert_eq!((c.px(-5.0), c.px(f64::NAN), c.px(0.0)), (0, 0, 0));
+        // A reversed box and a box wholly off the page ink nothing.
+        c.fill(10.0, 10.0, 5.0, 5.0);
+        c.fill(-20.0, -20.0, -10.0, -10.0);
+        assert_eq!(ink(&c.bits, 100.0, 0.0, 0.0, PAGE_MM.0, PAGE_MM.1), 0.0);
+        // A hair-thin line still prints one pixel.
+        c.line(true, 20.0, 10.0, 30.0, 0.0001, true);
+        let y = c.px(20.0);
+        assert!(c.bits.get(c.px(15.0), y));
+        assert!(!c.bits.get(c.px(15.0), y + 2));
+    }
 }

@@ -207,4 +207,59 @@ mod tests {
         let c = Gray8::filled(5, 1, 0).unwrap();
         assert!(union(&[&a, &c]).is_err());
     }
+
+    #[test]
+    fn radius_limits_are_inclusive_and_infinity_is_rejected() {
+        let g = Gray8::filled(3, 3, 255).unwrap();
+        assert!(spread(&g, MAX_RADIUS).is_ok());
+        assert!(choke(&g, MAX_RADIUS).is_ok());
+        for r in [MAX_RADIUS + 0.001, f64::INFINITY, f64::NEG_INFINITY, -0.0001] {
+            assert!(spread(&g, r).is_err(), "spread {r}");
+            assert!(choke(&g, r).is_err(), "choke {r}");
+        }
+    }
+
+    #[test]
+    fn single_pixel_plates_work() {
+        let on = Gray8::filled(1, 1, 255).unwrap();
+        let off = Gray8::filled(1, 1, 0).unwrap();
+        assert_eq!(spread(&on, 5.0).unwrap(), on);
+        assert_eq!(spread(&off, 5.0).unwrap(), off);
+        // The border counts as empty, so a lone pixel chokes away from one pixel up.
+        assert_eq!(choke(&on, 0.5).unwrap(), on, "under a pixel of choke leaves it");
+        assert_eq!(choke(&on, 1.0).unwrap(), off);
+        assert_eq!(choke(&on, MAX_RADIUS).unwrap(), off);
+    }
+
+    #[test]
+    fn one_pixel_wide_and_tall_plates_spread_along_their_length() {
+        let col = square(1, 9, 0, 1, 4, 5);
+        let s = spread(&col, 2.0).unwrap();
+        let on: Vec<usize> = (0..9).filter(|&y| s.get(0, y) == Some(255)).collect();
+        assert_eq!(on, vec![2, 3, 4, 5, 6]);
+        let row = square(9, 1, 4, 5, 0, 1);
+        let s = spread(&row, 2.0).unwrap();
+        let on: Vec<usize> = (0..9).filter(|&x| s.get(x, 0) == Some(255)).collect();
+        assert_eq!(on, vec![2, 3, 4, 5, 6]);
+    }
+
+    #[test]
+    fn the_threshold_is_exactly_128_and_a_fractional_radius_is_a_real_distance() {
+        let g = Gray8::new(4, 1, vec![127, 128, 0, 255]).unwrap();
+        assert_eq!(spread(&g, 0.0).unwrap().data(), &[0, 255, 0, 255]);
+        // A radius under one pixel grows nothing; exactly one pixel grows by one on each side.
+        let dot = square(5, 5, 2, 3, 2, 3);
+        assert_eq!(spread(&dot, 0.99).unwrap(), dot);
+        let grown = spread(&dot, 1.0).unwrap();
+        assert_eq!(grown.get(1, 2), Some(255));
+        assert_eq!(grown.get(1, 1), Some(0));
+    }
+
+    #[test]
+    fn union_of_one_plate_is_that_plate_and_a_mismatch_is_named() {
+        let a = square(6, 2, 1, 3, 0, 2);
+        assert_eq!(union(&[&a]).unwrap(), a);
+        let tall = Gray8::filled(6, 3, 0).unwrap();
+        assert!(matches!(union(&[&a, &tall]), Err(crate::ScError::SizeMismatch)));
+    }
 }
