@@ -28,3 +28,4 @@
 - 2026-11-26 nightly sweep: no needs-triage issues; history secret scan clean; cargo audit unchanged (#19, #98); `cargo xtask ci` on main all 13 steps green (11,168 tests).
 - Filed #107 and fixed it here: FM `dotMm` and index `cellMm` too big for the dpi are now refused with the largest size that fits, instead of silently shrunk.
 - 2026-11-26: issue #22: `command_sweep` junk sweep now runs every 4th case by default (`FULL_SWEEP=1` runs all); `every_command_with_junk_params` passes in ~200s (release). fmt ok; full `cargo xtask ci` not run this session (time).
+- 2026-11-28: issue #27: added 10 `jobsheet.rs` tests (empty job, row-cap edges, bad dpi, NaN/zero sizes, PDF string escaping and operator injection, clip/wrap, pagination). Tests only; no product change.
